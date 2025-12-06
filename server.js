@@ -18,8 +18,6 @@ const Booking = require("./db/bookingModel");
 // --- Middleware ---
 app.use(cors()); // Allow cross-origin requests
 app.use(express.json()); // Body parsing middleware for JSON
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, "public")));
 
 // --- Database Connection ---
 mongoose
@@ -50,8 +48,7 @@ app.post("/api/book", async (req, res) => {
       email,
       phone,
       session_type,
-      // Convert date string to a Date object, ensuring consistency
-      date: new Date(date),
+      date: new Date(date), // Ensure date object
       time,
       notes,
     });
@@ -63,7 +60,6 @@ app.post("/api/book", async (req, res) => {
       booking_id: booking._id,
     });
   } catch (err) {
-    // Check for double-booking error (Mongoose unique index error code 11000)
     if (err.code === 11000) {
       return res.status(409).json({
         msg: "This date and time slot is already booked. Please choose another.",
@@ -76,16 +72,13 @@ app.post("/api/book", async (req, res) => {
 
 /**
  * @route GET /api/availability
- * @desc Returns a list of all booked date/time slots to prevent double-booking.
+ * @desc Returns a list of all booked date/time slots.
  */
 app.get("/api/availability", async (req, res) => {
   try {
-    // Find all bookings and project only the date and time fields
     const bookedSlots = await Booking.find({}, "date time");
 
-    // Format the output for easier client-side consumption (e.g., 'YYYY-MM-DD HH:MM')
     const formattedBookedSlots = bookedSlots.map((slot) => ({
-      // Format the date to 'YYYY-MM-DD' string for client-side comparison
       date: slot.date.toISOString().split("T")[0],
       time: slot.time,
     }));
@@ -96,6 +89,17 @@ app.get("/api/availability", async (req, res) => {
     res.status(500).json({ msg: "Server error fetching availability." });
   }
 });
+
+// --- Static Files (must come AFTER API routes) ---
+app.use(express.static(path.join(__dirname, "public")));
+
+// OPTIONAL: If you're using a single-page application (React/Vue/SPA),
+// uncomment this so refresh routes work.
+/*
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+*/
 
 // --- Server Start ---
 app.listen(PORT, () => {
