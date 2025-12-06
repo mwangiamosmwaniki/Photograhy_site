@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO Meta Tags -->
+    <title>Portfolio - Lens & Light Photography | Our Featured Work</title>
+    <meta
+      name="description"
+      content="Explore Lens & Light Photography's wedding, portrait, event, and commercial portfolio showcasing cinematic and authentic imagery."
+    />
+    <meta
+      name="keywords"
+      content="photography portfolio, wedding photos, portrait photography, event photography, commercial photography"
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Lens & Light Photography Portfolio" />
+    <meta
+      property="og:description"
+      content="Browse our curated collection of professional photography work across weddings, portraits, events, and commercial shoots."
+    />
+    <meta property="og:type" content="website" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body id="portfolio-page">
+    <header>
+      <a href="index.html" class="logo">Lens & Light</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li>
+            <a href="booking.html" class="btn secondary mx-2">Book Now</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section id="portfolio-gallery">
+        <h1 style="text-align: center">Our Featured Work</h1>
+
+        <div class="filter-btns">
+          <button class="filter-btn active" data-filter="all">All Work</button>
+          <button class="filter-btn" data-filter="wedding">Weddings</button>
+          <button class="filter-btn" data-filter="portrait">Portraits</button>
+          <button class="filter-btn" data-filter="event">Events</button>
+          <button class="filter-btn" data-filter="commercial">
+            Commercial
+          </button>
+        </div>
+
+        <div class="gallery">
+          <div class="gallery-item" data-category="wedding">
+            <img
+              src="images/portfolio/wedding-1.jpg"
+              alt="Wedding couple portrait"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Wedding</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="wedding">
+            <img
+              src="images/portfolio/wedding-2.jpg"
+              alt="Bridal detail photography"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Wedding</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-1.jpg"
+              alt="Fashion portrait photography"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Portrait</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-2.jpg"
+              alt="Family portrait session"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Portrait</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-3.jpg"
+              alt="Creative studio lighting portrait"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Portrait</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-4.jpg"
+              alt="Graduation photography"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Graduation Shots</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-5.jpg"
+              alt="Birthday portrait session"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Birthday Shots</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="portrait">
+            <img
+              src="images/portfolio/portrait-6.jpg"
+              alt="Street photography portrait"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Street Photography</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="event">
+            <img
+              src="images/portfolio/event-1.jpg"
+              alt="Corporate gala photography"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Event</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="event">
+            <img
+              src="images/portfolio/event-2.jpg"
+              alt="Concert and live event photography"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Event</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="commercial">
+            <img
+              src="images/portfolio/commercial-1.jpg"
+              alt="Product photography commercial shoot"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Commercial</p></div>
+          </div>
+
+          <div class="gallery-item" data-category="commercial">
+            <img
+              src="images/portfolio/commercial-2.jpg"
+              alt="Food photography commercial session"
+              loading="lazy"
+            />
+            <div class="gallery-item-overlay"><p>Commercial</p></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        &copy; <span id="currentYear">2025</span> Lens & Light Photography. All
+        rights reserved.
+      </p>
+    </footer>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

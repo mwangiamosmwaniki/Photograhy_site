@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Book a Session</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <a href="index.html" class="logo">Lens & Light</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section id="booking-system">
+        <h1 style="text-align: center">Book Your Photography Session</h1>
+
+        <div
+          id="booking-confirmation"
+          style="
+            display: none;
+            text-align: center;
+            padding: 50px;
+            background-color: #e6ffe6;
+            border: 1px solid #00cc00;
+            border-radius: 8px;
+          "
+        >
+          <h2>✅ Booking Confirmed!</h2>
+          <p>
+            Thank you for booking with us. A confirmation email has been sent to
+            **<span id="conf-email"></span>**.
+          </p>
+          <p>Your session details:</p>
+          <p>
+            <strong>Package:</strong> <span id="conf-package"></span> |
+            <strong>Date:</strong> <span id="conf-date"></span> |
+            <strong>Time:</strong> <span id="conf-time"></span>
+          </p>
+          <a href="index.html" class="btn" style="margin-top: 20px"
+            >Return Home</a
+          >
+        </div>
+
+        <form id="booking-form" class="form-container">
+          <h2>Step 1: Choose Session Type</h2>
+          <div class="form-group">
+            <label for="session_type">Select Package/Session *</label>
+            <select id="session_type" name="session_type" required>
+              <option value="">-- Please Select --</option>
+              <option value="Portrait Session">Portrait Session ($250)</option>
+              <option value="Family Mini-Session">
+                Family Mini-Session ($350)
+              </option>
+              <option value="Wedding Package A">
+                Wedding Package A ($2000)
+              </option>
+              <option value="Event Half-Day">Event Half-Day ($800)</option>
+            </select>
+            <p class="error-message" id="error-session_type">
+              Please select a session type.
+            </p>
+          </div>
+
+          <h2>Step 2: Pick Date & Time</h2>
+
+          <div class="form-group" style="text-align: center">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+              "
+            >
+              <button type="button" class="btn secondary" id="prev-month-btn">
+                &lt; Prev
+              </button>
+              <h3 id="current-month-year"></h3>
+              <button type="button" class="btn secondary" id="next-month-btn">
+                Next &gt;
+              </button>
+            </div>
+            <div id="booking-calendar">
+              <div class="weekday">Sun</div>
+              <div class="weekday">Mon</div>
+              <div class="weekday">Tue</div>
+              <div class="weekday">Wed</div>
+              <div class="weekday">Thu</div>
+              <div class="weekday">Fri</div>
+              <div class="weekday">Sat</div>
+            </div>
+            <input type="hidden" id="selected_date" name="date" required />
+            <p class="error-message" id="error-date">Please select a date.</p>
+          </div>
+
+          <div class="form-group">
+            <label>Available Time Slots *</label>
+            <div class="time-slot-picker" id="time-slot-picker"></div>
+            <input type="hidden" id="selected_time" name="time" required />
+            <p class="error-message" id="error-time">
+              Please select an available time.
+            </p>
+          </div>
+
+          <h2>Step 3: Your Information</h2>
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" required />
+            <p class="error-message" id="error-name">
+              Please enter your full name.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required />
+            <p class="error-message" id="error-email">
+              Please enter a valid email address.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" name="phone" required />
+            <p class="error-message" id="error-phone">
+              Please enter a valid phone number (e.g., 555-555-5555).
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Notes (Optional)</label>
+            <textarea id="notes" name="notes" rows="4"></textarea>
+          </div>
+
+          <button type="submit" class="btn" id="submit-booking-btn">
+            Confirm Booking
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Lens & Light Photography. All rights reserved.</p>
+    </footer>
+    <script src="js/script.js"></script>
+    <script src="js/booking.js"></script>
+  </body>
+</html>

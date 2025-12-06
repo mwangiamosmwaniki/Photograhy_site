@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <a href="index.html" class="logo">Lens & Light</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="booking.html" class="btn secondary">Book Now</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section id="contact-info">
+        <h1 style="text-align: center">Get In Touch</h1>
+
+        <div
+          style="
+            display: flex;
+            gap: 50px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+          "
+        >
+          <div style="flex: 1; min-width: 300px; max-width: 350px">
+            <h2>Contact Details</h2>
+            <p style="margin-bottom: 20px">
+              For general inquiries, custom quotes, or to just say hello, please
+              use the form or the details below.
+            </p>
+
+            <p>
+              <strong>Email:</strong>
+              <a href="mailto:alex@lensandlight.com">alex@lensandlight.com</a>
+            </p>
+            <p>
+              <strong>Phone:</strong>
+              <a href="tel:+15555550101">(555) 555-0101</a>
+            </p>
+            <p style="margin-top: 20px"><strong>Studio Location:</strong></p>
+            <p>123 Creative St.<br />Studio 4B<br />New York, NY 10001</p>
+
+            <a
+              href="https://www.google.com/maps"
+              target="_blank"
+              class="btn secondary"
+              style="margin-top: 20px"
+              >View on Map</a
+            >
+          </div>
+
+          <form
+            id="general-contact-form"
+            class="form-container"
+            style="flex: 2; min-width: 300px; max-width: 600px"
+          >
+            <h2>Send a Message</h2>
+            <div class="form-group">
+              <label for="c_name">Name *</label>
+              <input type="text" id="c_name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="c_email">Email *</label>
+              <input type="email" id="c_email" name="email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="c_subject">Subject</label>
+              <input type="text" id="c_subject" name="subject" />
+            </div>
+
+            <div class="form-group">
+              <label for="c_message">Message *</label>
+              <textarea
+                id="c_message"
+                name="message"
+                rows="6"
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn">Send Message</button>
+
+            <p
+              id="contact-status"
+              style="margin-top: 15px; color: green; display: none"
+            >
+              Message Sent! I'll be in touch soon.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Lens & Light Photography. All rights reserved.</p>
+    </footer>
+    <script src="js/script.js"></script>
+    <script>
+      // Simple client-side status update for the general contact form
+      document
+        .getElementById("general-contact-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          // In a real application, you would use fetch() here to submit data to a dedicated /api/contact endpoint
+
+          // Show confirmation message
+          document.getElementById("contact-status").style.display = "block";
+
+          // Clear the form after a short delay
+          setTimeout(() => {
+            this.reset();
+            document.getElementById("contact-status").style.display = "none";
+          }, 3000);
+        });
+    </script>
+  </body>
+</html>
