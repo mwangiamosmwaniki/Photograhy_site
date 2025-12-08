@@ -27,7 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "15:00",
     "16:00",
   ];
-  const API_BASE_URL = window.location.origin; // Assumes backend runs on same host/port
+
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : "https://photography-site-8pct.onrender.com";
 
   // --- Utility Functions ---
 
