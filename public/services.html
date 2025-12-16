@@ -30,58 +30,24 @@
           files.
         </p>
 
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <h3>Portrait Session</h3>
-            <p class="price">$250</p>
-            <p>
-              Perfect for headshots, personal branding, or casual photoshoots.
-            </p>
-            <ul class="features">
-              <li>1 Hour of shooting time</li>
-              <li>1 Location of choice</li>
-              <li>15 Professionally edited images</li>
-              <li>Online proofing gallery</li>
-              <li style="text-decoration: line-through">
-                Print rights included
-              </li>
-            </ul>
-            <a href="booking.html?package=Portrait%20Session" class="btn"
-              >Book Now</a
-            >
-          </div>
+        <div id="loading" style="text-align: center; padding: 40px">
+          <p>Loading packages...</p>
+        </div>
 
-          <div class="pricing-card">
-            <h3>Family Mini-Session</h3>
-            <p class="price">$350</p>
-            <p>Ideal for families, maternity, or graduation photos.</p>
-            <ul class="features">
-              <li>90 Minutes of shooting time</li>
-              <li>Up to 6 people included</li>
-              <li>30 Professionally edited images</li>
-              <li>Online proofing gallery</li>
-              <li>Print rights included</li>
-            </ul>
-            <a href="booking.html?package=Family%20Mini-Session" class="btn"
-              >Book Now</a
-            >
-          </div>
+        <div class="pricing-grid" id="pricingGrid" style="display: none">
+          <!-- Pricing cards will be inserted here dynamically -->
+        </div>
 
-          <div class="pricing-card">
-            <h3>Wedding Package A</h3>
-            <p class="price">$2,000</p>
-            <p>Comprehensive coverage for small to medium weddings.</p>
-            <ul class="features">
-              <li>8 Hours of continuous coverage</li>
-              <li>Two photographers</li>
-              <li>350+ Professionally edited images</li>
-              <li>Custom USB drive delivery</li>
-              <li>Print rights included</li>
-            </ul>
-            <a href="booking.html?package=Wedding%20Package%20A" class="btn"
-              >Book Now</a
-            >
-          </div>
+        <div
+          id="error"
+          style="
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #e74c3c;
+          "
+        >
+          <p>Unable to load pricing packages. Please try again later.</p>
         </div>
 
         <p style="text-align: center; margin-top: 50px">
@@ -92,8 +58,81 @@
     </main>
 
     <footer>
-      <p>&copy; 2024 Lens & Light Photography. All rights reserved.</p>
+      <p>&copy; 2025 Jr Photography. All rights reserved.</p>
     </footer>
+
+    <script>
+      // Fetch pricing packages from MongoDB via Node backend
+      async function loadPricingPackages() {
+        const loadingEl = document.getElementById("loading");
+        const gridEl = document.getElementById("pricingGrid");
+        const errorEl = document.getElementById("error");
+
+        try {
+          // Fetch packages from your backend API
+          const response = await fetch("/api/packages");
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch packages");
+          }
+
+          const packages = await response.json();
+
+          // Hide loading, show grid
+          loadingEl.style.display = "none";
+          gridEl.style.display = "grid";
+
+          // Clear any existing content
+          gridEl.innerHTML = "";
+
+          // Render each package
+          packages.forEach((pkg) => {
+            const card = createPricingCard(pkg);
+            gridEl.appendChild(card);
+          });
+        } catch (error) {
+          console.error("Error loading packages:", error);
+          loadingEl.style.display = "none";
+          errorEl.style.display = "block";
+        }
+      }
+
+      // Create a pricing card element
+      function createPricingCard(pkg) {
+        const card = document.createElement("div");
+        card.className = "pricing-card";
+
+        // Format price with thousand separators
+        const formattedPrice = pkg.price.toLocaleString("en-KE");
+
+        // Build features list
+        const featuresList = pkg.features
+          .map((feature) => {
+            const strikethrough = feature.strikethrough
+              ? ' style="text-decoration: line-through"'
+              : "";
+            return `<li${strikethrough}>${feature.text}</li>`;
+          })
+          .join("");
+
+        card.innerHTML = `
+          <h3>${pkg.name}</h3>
+          <p class="price">Ksh ${formattedPrice}</p>
+          <p>${pkg.description}</p>
+          <ul class="features">
+            ${featuresList}
+          </ul>
+          <a href="booking.html?package=${encodeURIComponent(
+            pkg.name
+          )}" class="btn">Book Now</a>
+        `;
+
+        return card;
+      }
+
+      // Load packages when page loads
+      document.addEventListener("DOMContentLoaded", loadPricingPackages);
+    </script>
     <script src="js/script.js"></script>
   </body>
 </html>

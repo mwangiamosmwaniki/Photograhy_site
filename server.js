@@ -12,8 +12,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Import the Booking model
+// Import models
 const Booking = require("./db/bookingModel");
+const Package = require("./db/packageModel");
 
 // --- Middleware ---
 app.use(cors()); // Allow cross-origin requests
@@ -90,6 +91,150 @@ app.get("/api/availability", async (req, res) => {
   }
 });
 
+/**
+ * @route GET /api/packages
+ * @desc Returns all photography packages from the database.
+ */
+app.get("/api/packages", async (req, res) => {
+  try {
+    const packages = await Package.find({}).sort({ price: 1 });
+    res.json(packages);
+  } catch (err) {
+    console.error("Packages fetch error:", err);
+    res.status(500).json({ msg: "Server error fetching packages." });
+  }
+});
+
+/**
+ * @route GET /api/packages/:id
+ * @desc Returns a single package by ID.
+ */
+app.get("/api/packages/:id", async (req, res) => {
+  try {
+    const package = await Package.findById(req.params.id);
+
+    if (!package) {
+      return res.status(404).json({ msg: "Package not found." });
+    }
+
+    res.json(package);
+  } catch (err) {
+    console.error("Package fetch error:", err);
+    res.status(500).json({ msg: "Server error fetching package." });
+  }
+});
+
+/**
+ * @route POST /api/packages
+ * @desc Creates a new package.
+ */
+app.post("/api/packages", async (req, res) => {
+  try {
+    const { name, price, description, features } = req.body;
+
+    if (!name || !price || !description) {
+      return res
+        .status(400)
+        .json({ msg: "Please include all required fields." });
+    }
+
+    const newPackage = new Package({
+      name,
+      price,
+      description,
+      features: features || [],
+    });
+
+    const savedPackage = await newPackage.save();
+    res.status(201).json(savedPackage);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res
+        .status(409)
+        .json({ msg: "A package with this name already exists." });
+    }
+    console.error("Package creation error:", err);
+    res.status(500).json({ msg: "Server error creating package." });
+  }
+});
+
+/**
+ * @route PUT /api/packages/:id
+ * @desc Updates an existing package.
+ */
+app.put("/api/packages/:id", async (req, res) => {
+  try {
+    const { name, price, description, features } = req.body;
+
+    const updatedPackage = await Package.findByIdAndUpdate(
+      req.params.id,
+      { name, price, description, features },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPackage) {
+      return res.status(404).json({ msg: "Package not found." });
+    }
+
+    res.json(updatedPackage);
+  } catch (err) {
+    console.error("Package update error:", err);
+    res.status(500).json({ msg: "Server error updating package." });
+  }
+});
+
+/**
+ * @route DELETE /api/packages/:id
+ * @desc Deletes a package.
+ */
+app.delete("/api/packages/:id", async (req, res) => {
+  try {
+    const deletedPackage = await Package.findByIdAndDelete(req.params.id);
+
+    if (!deletedPackage) {
+      return res.status(404).json({ msg: "Package not found." });
+    }
+
+    res.json({ msg: "Package deleted successfully." });
+  } catch (err) {
+    console.error("Package deletion error:", err);
+    res.status(500).json({ msg: "Server error deleting package." });
+  }
+});
+
+/**
+ * @route GET /api/bookings
+ * @desc Returns all bookings from the database.
+ */
+app.get("/api/bookings", async (req, res) => {
+  try {
+    const bookings = await Booking.find({}).sort({ date: -1 });
+    res.json(bookings);
+  } catch (err) {
+    console.error("Bookings fetch error:", err);
+    res.status(500).json({ msg: "Server error fetching bookings." });
+  }
+});
+
+/**
+ * @route DELETE /api/bookings/:id
+ * @desc Deletes a booking.
+ */
+app.delete("/api/bookings/:id", async (req, res) => {
+  try {
+    const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
+
+    if (!deletedBooking) {
+      return res.status(404).json({ msg: "Booking not found." });
+    }
+
+    res.json({ msg: "Booking deleted successfully." });
+  } catch (err) {
+    console.error("Booking deletion error:", err);
+    res.status(500).json({ msg: "Server error deleting booking." });
+  }
+});
+
 // --- Static Files (must come AFTER API routes) ---
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -104,4 +249,7 @@ app.get("*", (req, res) => {
 // --- Server Start ---
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(
+    `Admin dashboard available at http://localhost:${PORT}/admin.html`
+  );
 });
