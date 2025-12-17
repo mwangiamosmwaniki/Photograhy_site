@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard - Lens & Light</title>
+    <title>Admin Dashboard - Jr Photography</title>
     <style>
       * {
         margin: 0;
@@ -21,34 +21,36 @@
       .header {
         background: #2c3e50;
         color: white;
-        padding: 1.5rem 2rem;
+        padding: 1rem 1.5rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
       .header h1 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 600;
       }
 
       .container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 2rem;
+        padding: 1rem;
       }
 
+      /* Tabs */
       .tabs {
         display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
         border-bottom: 2px solid #ddd;
       }
 
       .tab {
-        padding: 1rem 2rem;
+        padding: 0.5rem 1rem;
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 0.95rem;
         font-weight: 500;
         color: #666;
         border-bottom: 3px solid transparent;
@@ -64,6 +66,10 @@
         border-bottom-color: #3498db;
       }
 
+      .tabs .btn-danger {
+        margin-left: auto;
+      }
+
       .tab-content {
         display: none;
       }
@@ -74,22 +80,24 @@
 
       .section-header {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
       }
 
       .section-header h2 {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         color: #2c3e50;
+        margin-bottom: 0.5rem;
       }
 
       .btn {
-        padding: 0.75rem 1.5rem;
+        padding: 0.5rem 1rem;
         border: none;
         border-radius: 6px;
         cursor: pointer;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
         font-weight: 500;
         transition: all 0.3s;
       }
@@ -130,14 +138,16 @@
         background: #7f8c8d;
       }
 
+      /* Card */
       .card {
         background: white;
         border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
 
+      /* Tables */
       .table-container {
         overflow-x: auto;
       }
@@ -150,9 +160,10 @@
 
       th,
       td {
-        padding: 1rem;
+        padding: 0.75rem;
         text-align: left;
         border-bottom: 1px solid #ecf0f1;
+        font-size: 0.9rem;
       }
 
       th {
@@ -165,6 +176,7 @@
         background: #f8f9fa;
       }
 
+      /* Modal */
       .modal {
         display: none;
         position: fixed;
@@ -181,13 +193,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
+        padding: 1rem;
       }
 
       .modal-content {
         background: white;
         border-radius: 8px;
-        padding: 2rem;
+        padding: 1.5rem;
         max-width: 600px;
         width: 100%;
         max-height: 90vh;
@@ -198,11 +210,11 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
       }
 
       .modal-header h3 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         color: #2c3e50;
       }
 
@@ -218,39 +230,42 @@
         color: #2c3e50;
       }
 
+      /* Forms */
       .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
       }
 
       .form-group label {
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         font-weight: 500;
         color: #2c3e50;
+        font-size: 0.9rem;
       }
 
       .form-group input,
       .form-group textarea,
       .form-group select {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.5rem;
         border: 1px solid #ddd;
         border-radius: 6px;
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-family: inherit;
       }
 
       .form-group textarea {
         resize: vertical;
-        min-height: 100px;
+        min-height: 80px;
       }
 
       .features-list {
-        margin-top: 1rem;
+        margin-top: 0.5rem;
       }
 
       .feature-item {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.5rem;
         margin-bottom: 0.5rem;
         align-items: center;
@@ -265,7 +280,7 @@
       }
 
       .feature-item button {
-        padding: 0.5rem;
+        padding: 0.3rem 0.5rem;
         background: #e74c3c;
         color: white;
         border: none;
@@ -279,58 +294,115 @@
 
       .actions {
         display: flex;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
       }
 
       .icon-btn {
-        padding: 0.5rem 1rem;
+        padding: 0.3rem 0.6rem;
         border: none;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
       }
 
-      .loading {
-        text-align: center;
-        padding: 2rem;
-        color: #95a5a6;
-      }
-
+      .loading,
       .empty-state {
         text-align: center;
-        padding: 3rem;
+        padding: 1.5rem;
         color: #95a5a6;
       }
 
+      /* Stats */
       .stats {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
       }
 
       .stat-card {
         background: white;
-        padding: 1.5rem;
+        padding: 1rem;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
       }
 
       .stat-card h3 {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: #3498db;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
       }
 
       .stat-card p {
         color: #7f8c8d;
-        font-size: 0.9rem;
+        font-size: 0.8rem;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 1.2rem;
+        }
+
+        .section-header h2 {
+          font-size: 1.2rem;
+        }
+
+        .tab {
+          font-size: 0.85rem;
+          padding: 0.4rem 0.8rem;
+        }
+
+        .btn {
+          font-size: 0.8rem;
+          padding: 0.4rem 0.8rem;
+        }
+
+        .modal-content {
+          padding: 1rem;
+        }
+
+        th,
+        td {
+          font-size: 0.8rem;
+          padding: 0.5rem;
+        }
+
+        .stat-card h3 {
+          font-size: 1.2rem;
+        }
+
+        .stat-card p {
+          font-size: 0.75rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .tabs {
+          flex-direction: column;
+        }
+
+        .tabs .btn-danger {
+          margin-left: 0;
+        }
+
+        .section-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.5rem;
+        }
+
+        .actions {
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
     <div class="header">
-      <h1>Admin Dashboard - Lens & Light Photography</h1>
+      <h1>Admin Dashboard - Jr Photography</h1>
     </div>
 
     <div class="container">
@@ -1120,7 +1192,7 @@
         document.addEventListener(event, resetLogoutTimer)
       );
 
-      resetLogoutTimer(); // start timer
+      resetLogoutTimer();
     </script>
   </body>
 </html>
