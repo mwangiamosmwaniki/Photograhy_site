@@ -3,12 +3,12 @@
 
 :root {
   /* Beautiful Modern Photography Palette */
-  --primary-color: #0f172a; /* Deep navy blue */
-  --secondary-color: #1e293b; /* Slate dark */
-  --accent-color: #f59e0b; /* Vibrant amber */
-  --warm-accent: #ec4899; /* Energetic pink */
-  --cool-accent: #06b6d4; /* Cyan blue */
-  --light-accent: #fbbf24; /* Light gold */
+  --primary-color: #0f172a;
+  --secondary-color: #1e293b;
+  --accent-color: #f59e0b;
+  --warm-accent: #ec4899;
+  --cool-accent: #06b6d4;
+  --light-accent: #fbbf24;
   --light-bg: #f8fafc;
   --light-gray: #e2e8f0;
   --white: #ffffff;
@@ -18,7 +18,6 @@
   --font-heading: "Playfair Display", serif;
   --font-body: "Montserrat", sans-serif;
 
-  /* Transition speeds */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -33,6 +32,7 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 16px; /* Base font size for rem calculations */
 }
 
 body {
@@ -41,6 +41,7 @@ body {
   line-height: 1.7;
   background-color: var(--white);
   overflow-x: hidden;
+  width: 100%;
 }
 
 /* --- Typography --- */
@@ -51,18 +52,22 @@ h3 {
   margin-bottom: 0.5em;
   font-weight: 700;
   letter-spacing: 0.5px;
+  word-wrap: break-word;
 }
 
 h1 {
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.75rem, 5vw, 4rem);
+  line-height: 1.2;
 }
 
 h2 {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  line-height: 1.3;
 }
 
 h3 {
-  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-size: clamp(1.1rem, 3vw, 1.75rem);
+  line-height: 1.4;
 }
 
 a {
@@ -78,12 +83,13 @@ a:hover {
 
 p {
   margin-bottom: 1rem;
+  word-wrap: break-word;
 }
 
 /* --- Navigation --- */
 header {
   background-color: var(--white);
-  padding: 0.5rem 5%;
+  padding: 0.75rem 5%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -94,6 +100,7 @@ header {
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   transition: all var(--transition-fast);
   min-height: 60px;
+  width: 100%;
 }
 
 header:hover {
@@ -102,7 +109,7 @@ header:hover {
 
 .logo {
   font-family: var(--font-heading);
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
   font-weight: 700;
   background: linear-gradient(135deg, var(--accent-color), var(--warm-accent));
   -webkit-background-clip: text;
@@ -120,8 +127,9 @@ header:hover {
 .nav-links {
   list-style: none;
   display: flex;
-  gap: 1.5rem;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .nav-links li {
@@ -130,7 +138,7 @@ header:hover {
 
 .nav-links a {
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
   font-weight: 700;
   padding: 6px 0;
   position: relative;
@@ -164,7 +172,6 @@ header:hover {
   transition: all 0.3s ease;
 }
 
-/* X animation */
 .nav-toggle.open .bar:nth-child(1) {
   transform: translateY(8px) rotate(45deg);
 }
@@ -180,21 +187,22 @@ header:hover {
   .nav-toggle {
     display: flex;
     position: fixed;
-    top: 1rem; /* small offset from top */
-    right: 1.5rem; /* small offset from right */
+    top: 1rem;
+    right: 1.5rem;
     z-index: 1100;
   }
 
   .nav-links {
     position: fixed;
-    top: 4rem; /* just below the X button */
+    top: 4rem;
     right: -100%;
-    width: 70%;
-    height: auto; /* only as tall as needed */
+    width: min(70%, 300px);
+    max-height: calc(100vh - 5rem);
+    overflow-y: auto;
     background: var(--white);
     flex-direction: column;
-    gap: 1rem; /* small gap between links */
-    padding: 0.5rem 2rem; /* minimal padding */
+    gap: 0.5rem;
+    padding: 1rem 2rem;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
     transition: right 0.35s ease;
     align-items: flex-start;
@@ -206,15 +214,16 @@ header:hover {
   }
 
   .nav-links a {
-    font-size: 1.2rem;
-    padding: 6px 0; /* tight vertical padding */
+    font-size: 1rem;
+    padding: 8px 0;
+    width: 100%;
   }
 }
 
 /* --- Buttons --- */
 .btn {
   display: inline-block;
-  padding: 10px 28px;
+  padding: clamp(8px, 2vw, 10px) clamp(20px, 4vw, 28px);
   margin: 10px 10px 10px 0;
   border: 2px solid var(--accent-color);
   background: linear-gradient(135deg, var(--accent-color), var(--light-accent));
@@ -227,7 +236,9 @@ header:hover {
   transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+  text-align: center;
+  white-space: nowrap;
 }
 
 .btn::before {
@@ -282,47 +293,38 @@ main {
   padding: 0 5%;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
 }
 
 section {
-  padding: clamp(60px, 10vw, 120px) 0;
+  padding: clamp(40px, 8vw, 120px) 0;
   animation: fadeInUp 0.6s ease-out;
+  width: 100%;
 }
 
 /* --- Hero Section --- */
 .hero {
   position: relative;
   overflow: hidden;
-
-  /* full-bleed: span entire viewport width */
   width: 100vw;
   max-width: 100vw;
-
-  /* move the element out of the normal padded container so
-     the background reaches the viewport edges */
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-
-  /* keep the visual min-height & centering */
-  min-height: 70vh;
+  min-height: clamp(50vh, 70vh, 85vh);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* preserve text color */
   color: var(--white);
   box-sizing: border-box;
 }
 
-/* slider container sits behind content */
 .hero-slider {
   position: absolute;
-  inset: 0; /* top:0; right:0; bottom:0; left:0; */
+  inset: 0;
   z-index: 1;
   pointer-events: none;
 }
 
-/* each slide fills the hero */
 .hero-slider .slide {
   position: absolute;
   inset: 0;
@@ -335,13 +337,11 @@ section {
   will-change: opacity, transform;
 }
 
-/* active slide visible */
 .hero-slider .slide.active {
   opacity: 1;
   z-index: 2;
 }
 
-/* subtle Ken Burns pan/zoom on each active slide */
 .hero-slider .slide.kenburns {
   animation: kenburns 12s ease-in-out both;
 }
@@ -358,7 +358,6 @@ section {
   }
 }
 
-/* overlay to darken + color wash for readability */
 .hero-overlay {
   position: absolute;
   inset: 0;
@@ -372,37 +371,24 @@ section {
   pointer-events: none;
 }
 
-/* content above slider & overlay */
 .hero-content {
   position: relative;
   z-index: 4;
-  padding: 2rem 5%; /* 5% matches main padding for consistent alignment */
+  padding: clamp(1rem, 4vw, 2rem) 5%;
   max-width: 1100px;
   width: 100%;
   text-align: center;
 }
 
-/* responsive tweaks */
-@media (min-width: 1024px) {
-  .hero {
-    min-height: 85vh;
-  }
-  .hero h1 {
-    font-size: clamp(2.8rem, 6vw, 4.8rem);
-  }
+.hero-content h1 {
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
 }
 
-@media (max-width: 480px) {
-  .hero-overlay {
-    background: linear-gradient(
-      180deg,
-      rgba(15, 17, 42, 0.6),
-      rgba(15, 17, 42, 0.5)
-    );
-  }
-  .hero h1 {
-    font-size: 1.8rem;
-  }
+.hero-content p {
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 /* --- Section Titles --- */
@@ -419,7 +405,7 @@ section h2::after {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
+  width: clamp(40px, 10vw, 80px);
   height: 4px;
   background: linear-gradient(90deg, var(--accent-color), var(--warm-accent));
   border-radius: 2px;
@@ -428,18 +414,16 @@ section h2::after {
 /* --- Gallery/Portfolio Grid --- */
 .gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(12px, 3vw, 24px);
   margin-top: 1rem;
+  width: 100%;
 }
 
 .gallery-item {
-  height: 280px;
-}
-.gallery-item {
   overflow: hidden;
   position: relative;
-  height: 420px;
+  height: clamp(250px, 40vw, 420px);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
   cursor: pointer;
@@ -449,14 +433,7 @@ section h2::after {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.gallery-item:nth-child(n + 4) {
-  animation-delay: 0.1s;
-}
-
-.gallery-item:nth-child(n + 7) {
-  animation-delay: 0.2s;
+  width: 100%;
 }
 
 .gallery-item img {
@@ -493,6 +470,7 @@ section h2::after {
   opacity: 0;
   transition: opacity var(--transition-normal);
   backdrop-filter: blur(3px);
+  padding: 1rem;
 }
 
 .gallery-item:hover .gallery-item-overlay {
@@ -504,9 +482,10 @@ section h2::after {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
-  font-size: 0.9rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
   transform: translateY(20px);
   transition: transform var(--transition-normal);
+  text-align: center;
 }
 
 .gallery-item:hover .gallery-item-overlay p {
@@ -521,20 +500,22 @@ section h2::after {
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
+  width: 100%;
 }
 
 .filter-btn {
   background: var(--light-bg);
   border: 2px solid transparent;
-  padding: 10px 24px;
+  padding: clamp(8px, 2vw, 10px) clamp(16px, 3vw, 24px);
   cursor: pointer;
   text-transform: uppercase;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   letter-spacing: 1px;
   border-radius: 25px;
   transition: all var(--transition-normal);
   color: var(--primary-color);
+  white-space: nowrap;
 }
 
 .filter-btn:hover {
@@ -555,14 +536,15 @@ section h2::after {
 /* --- Services/Pricing Cards --- */
 .pricing-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
   margin-top: 3rem;
+  width: 100%;
 }
 
 .pricing-card {
   background: var(--white);
-  padding: 2.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
   text-align: center;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
@@ -571,6 +553,7 @@ section h2::after {
   position: relative;
   overflow: hidden;
   animation: fadeInUp 0.6s ease-out;
+  width: 100%;
 }
 
 .pricing-card::before {
@@ -615,14 +598,14 @@ section h2::after {
 }
 
 .price {
-  font-size: 2.8rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
   font-weight: 700;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
 }
 
 .price-currency {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
 .features {
@@ -636,7 +619,7 @@ section h2::after {
   border-bottom: 1px solid var(--light-gray);
   position: relative;
   padding-left: 1.5rem;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.5vw, 0.95rem);
   color: var(--primary-color);
 }
 
@@ -652,15 +635,17 @@ section h2::after {
 .form-container {
   max-width: 700px;
   margin: 2rem auto;
-  padding: 2rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
   background: var(--light-bg);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   animation: fadeInUp 0.6s ease-out;
+  width: 100%;
 }
 
 .form-group {
   margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .form-group label {
@@ -668,18 +653,18 @@ section h2::after {
   margin-bottom: 0.5rem;
   font-weight: 600;
   color: var(--primary-color);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.5vw, 0.95rem);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 12px;
+  padding: clamp(10px, 2vw, 12px);
   border: 2px solid var(--light-gray);
   border-radius: 8px;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 2vw, 1rem);
   transition: all var(--transition-normal);
   background-color: var(--white);
   color: var(--primary-color);
@@ -701,26 +686,25 @@ textarea {
 
 .error-message {
   color: var(--danger);
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
   margin-top: 0.5rem;
   display: none;
 }
 
 /* --- Booking Calendar --- */
-/* --- Responsive Booking Calendar --- */
 #booking-calendar {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: clamp(4px, 1.5vw, 8px);
   margin-bottom: 2rem;
-  padding: 1rem;
+  padding: clamp(0.5rem, 2vw, 1rem);
   background: var(--white);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  overflow-x: auto; /* Allow horizontal scroll on very small screens */
+  width: 100%;
+  overflow: hidden;
 }
 
-/* Weekday headers */
 .weekday {
   font-weight: 700;
   text-align: center;
@@ -730,15 +714,13 @@ textarea {
     var(--secondary-color)
   );
   color: var(--white);
-  padding: 6px 0;
+  padding: clamp(4px, 1.5vw, 8px) 0;
   border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: clamp(0.6rem, 1.5vw, 0.75rem);
   text-transform: uppercase;
   letter-spacing: 1px;
-  flex-shrink: 0;
 }
 
-/* Day cells */
 .day {
   aspect-ratio: 1;
   display: flex;
@@ -750,10 +732,10 @@ textarea {
   font-weight: 500;
   border: 2px solid transparent;
   color: var(--primary-color);
-  min-width: 40px; /* Prevent cells from getting too small on mobile */
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  min-width: 0;
 }
 
-/* Disabled / fully booked days */
 .day.disabled {
   background-color: var(--light-gray);
   color: #999;
@@ -761,7 +743,6 @@ textarea {
   opacity: 0.5;
 }
 
-/* Hover & selection */
 .day.current-month:not(.disabled):hover {
   background: linear-gradient(135deg, var(--accent-color), var(--light-accent));
   color: var(--white);
@@ -781,58 +762,21 @@ textarea {
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
 }
 
-/* --- Tablet / Medium Screens --- */
-@media (max-width: 768px) {
-  #booking-calendar {
-    grid-template-columns: repeat(7, minmax(40px, 1fr));
-    gap: 6px;
-    padding: 0.5rem;
-  }
-
-  .weekday {
-    font-size: 0.65rem;
-  }
-
-  .day {
-    min-width: 35px;
-    font-size: 0.8rem;
-  }
-}
-
-/* --- Mobile / Small Screens --- */
-@media (max-width: 480px) {
-  #booking-calendar {
-    grid-template-columns: repeat(7, minmax(35px, 1fr));
-    gap: 4px;
-    padding: 0.25rem;
-  }
-
-  .weekday {
-    font-size: 0.6rem;
-    padding: 4px 0;
-  }
-
-  .day {
-    min-width: 30px;
-    font-size: 0.75rem;
-    padding: 4px 0;
-  }
-}
-
 /* --- Time Slots --- */
 .time-slot-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(80px, 100%), 1fr));
+  gap: clamp(6px, 1.5vw, 10px);
   margin-bottom: 2rem;
+  width: 100%;
 }
 
 .time-slot {
-  padding: 10px 12px;
+  padding: clamp(8px, 2vw, 10px) clamp(8px, 2vw, 12px);
   border: 2px solid var(--accent-color);
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   font-weight: 600;
   text-align: center;
   background: var(--white);
@@ -840,6 +784,7 @@ textarea {
   transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
 }
 
 .time-slot:hover {
@@ -868,74 +813,23 @@ textarea {
   text-decoration: line-through;
 }
 
-/* --- Calendar Navigation Buttons --- */
+/* Calendar Navigation Buttons */
 #prev-month-btn,
 #next-month-btn {
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  padding: clamp(4px, 1.5vw, 8px) clamp(8px, 2vw, 12px);
+  font-size: clamp(0.75rem, 1.5vw, 0.85rem);
   border: none;
   border-radius: 6px;
   background: var(--light-gray);
   cursor: pointer;
   transition: background 0.3s;
+  white-space: nowrap;
 }
 
 #prev-month-btn:hover,
 #next-month-btn:hover {
   background: var(--accent-color);
   color: #fff;
-}
-
-/* --- Responsive --- */
-@media (max-width: 768px) {
-  .form-container {
-    padding: 1.5rem;
-    margin: 1rem;
-  }
-
-  #booking-calendar {
-    gap: 6px;
-    padding: 0.75rem;
-  }
-
-  .weekday {
-    font-size: 0.7rem;
-    padding: 4px 0;
-  }
-
-  .time-slot-picker {
-    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    gap: 8px;
-  }
-
-  .time-slot {
-    font-size: 0.8rem;
-    padding: 8px 10px;
-  }
-
-  #prev-month-btn,
-  #next-month-btn {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-  }
-}
-
-@media (max-width: 480px) {
-  #booking-calendar {
-    grid-template-columns: repeat(7, 1fr);
-  }
-
-  h1,
-  h2,
-  h3 {
-    font-size: 1.1rem;
-    text-align: center;
-  }
-
-  .time-slot-picker {
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 6px;
-  }
 }
 
 /* --- Footer --- */
@@ -947,15 +841,16 @@ footer {
   );
   color: var(--white);
   text-align: center;
-  padding: 3rem 5%;
+  padding: clamp(2rem, 5vw, 3rem) 5%;
   margin-top: 4rem;
   border-top: 3px solid var(--accent-color);
   animation: fadeIn 0.8s ease-out;
+  width: 100%;
 }
 
 footer p {
   margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.5vw, 0.95rem);
 }
 
 footer a {
@@ -974,12 +869,7 @@ footer a:hover {
   }
 
   .gallery {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-  }
-
-  .pricing-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   }
 
   .pricing-card.featured {
@@ -989,20 +879,7 @@ footer a:hover {
 
 @media (max-width: 768px) {
   header {
-    padding: 0.6rem 4%;
-  }
-
-  .logo {
-    font-size: 1.3rem;
-  }
-
-  .nav-links {
-    gap: 1rem;
-    font-size: 0.7rem;
-  }
-
-  .nav-links a {
-    padding: 4px 0;
+    padding: 0.75rem 4%;
   }
 
   main {
@@ -1010,139 +887,47 @@ footer a:hover {
   }
 
   section {
-    padding: 40px 0;
-  }
-
-  .hero {
-    min-height: 70vh;
-  }
-
-  .hero h1 {
-    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+    padding: clamp(30px, 6vw, 60px) 0;
   }
 
   .gallery {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   }
 
   .gallery-item {
-    aspect-ratio: 1;
+    height: clamp(200px, 35vw, 300px);
   }
 
-  .form-container {
-    padding: 1.5rem;
-  }
-
-  .btn {
-    padding: 8px 20px;
-    font-size: 0.8rem;
-  }
-
-  section h2::after {
-    width: 60px;
+  #booking-calendar {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .time-slot-picker {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(min(70px, 45%), 1fr));
   }
 }
 
 @media (max-width: 480px) {
-  header {
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: 0.6rem 4%;
-  }
-
-  .logo {
-    font-size: 1.1rem;
-  }
-
-  .nav-links {
-    gap: 0.6rem;
-    font-size: 0.65rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .nav-links li {
-    margin: 0;
-  }
-
-  .hero {
-    min-height: 60vh;
-  }
-
-  .hero h1 {
-    font-size: 1.8rem;
-  }
-
-  .hero p {
-    font-size: 0.95rem;
-  }
-
-  .gallery {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .gallery-item-overlay p {
-    font-size: 0.8rem;
-  }
-
-  .pricing-grid {
-    gap: 1rem;
-  }
-
-  .pricing-card {
-    padding: 1.5rem;
-  }
-
-  .price {
-    font-size: 2rem;
-  }
-
   .btn {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
   }
 
-  .form-container {
-    padding: 1.2rem;
-    margin: 1rem auto;
+  .gallery {
+    grid-template-columns: 1fr;
   }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 10px;
-    font-size: 16px;
+  .gallery-item {
+    height: clamp(250px, 60vw, 350px);
   }
 
   .time-slot-picker {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   #booking-calendar {
-    gap: 6px;
-    padding: 1rem;
-  }
-
-  #booking-calendar .day,
-  #booking-calendar .weekday {
-    font-size: 0.85rem;
-    padding: 8px;
-  }
-
-  section h2 {
-    font-size: 1.5rem;
-  }
-
-  section h2::after {
-    width: 40px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   footer {
@@ -1150,34 +935,40 @@ footer a:hover {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Print Styles */
-@media print {
-  header,
-  footer,
-  .btn,
-  .filter-btns {
-    display: none;
-  }
-
-  section {
-    page-break-inside: avoid;
-  }
-}
-
-/* Reduce gap above the CTA section */
+/* CTA Section */
 #cta-services {
-  padding-top: clamp(
-    15px,
-    4vw,
-    20px
-  ); /* smaller top padding for tighter spacing */
-  padding-bottom: clamp(40px, 6vw, 80px); /* keep bottom padding comfortable */
+  padding-top: clamp(15px, 4vw, 20px);
+  padding-bottom: clamp(40px, 6vw, 80px);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

@@ -30,8 +30,15 @@
 
   <body id="portfolio-page">
     <header>
-      <a href="index.html" class="logo">Lens & Light</a>
-      <nav>
+      <a href="index.html" class="logo">JR Pixels</a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </button>
+
+      <nav class="nav-menu" id="nav-menu">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
           <li><a href="portfolio.html">Portfolio</a></li>
@@ -39,7 +46,12 @@
           <li><a href="about.html">About</a></li>
           <li><a href="contact.html">Contact</a></li>
           <li>
-            <a href="booking.html" class="btn secondary mx-2">Book Now</a>
+            <a
+              href="booking.html"
+              class="inline-block border-2 border-yellow-500 !text-yellow-500 font-semibold rounded-lg !px-4 !py-2 hover:!bg-yellow-500 hover:!text-white transition-colors duration-300"
+            >
+              Book Now
+            </a>
           </li>
         </ul>
       </nav>

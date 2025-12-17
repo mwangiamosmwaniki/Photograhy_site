@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const path = require("path");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -11,10 +12,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
 // Import models
 const Booking = require("./db/bookingModel");
 const Package = require("./db/packageModel");
+const User = require("./db/userModel");
+
+// Import middleware
+const authMiddleware = require("./middleware/authMiddleware");
 
 // --- Middleware ---
 app.use(cors()); // Allow cross-origin requests
@@ -26,7 +32,67 @@ mongoose
   .then(() => console.log("MongoDB connected successfully."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// --- API Endpoints ---
+// --- Authentication Endpoints ---
+
+/**
+ * @route POST /api/auth/login
+ * @desc Login admin user
+ */
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ msg: "Please provide username and password" });
+    }
+
+    // Find user
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ msg: "Invalid credentials" });
+    }
+
+    // Check password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ msg: "Invalid credentials" });
+    }
+
+    // Create JWT token
+    const payload = {
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+
+    res.json({
+      token,
+      user: {
+        username: user.username,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json({ msg: "Server error during login" });
+  }
+});
+
+/**
+ * @route GET /api/auth/verify
+ * @desc Verify token
+ */
+app.get("/api/auth/verify", authMiddleware, (req, res) => {
+  res.json({ valid: true, user: req.user });
+});
+
+// --- Public API Endpoints ---
 
 /**
  * @route POST /api/book
@@ -36,25 +102,22 @@ app.post("/api/book", async (req, res) => {
   try {
     const { name, email, phone, session_type, date, time, notes } = req.body;
 
-    // Basic check for required fields
     if (!name || !email || !phone || !session_type || !date || !time) {
       return res
         .status(400)
         .json({ msg: "Please include all required fields." });
     }
 
-    // Create a new Booking document
     const newBooking = new Booking({
       name,
       email,
       phone,
       session_type,
-      date: new Date(date), // Ensure date object
+      date: new Date(date),
       time,
       notes,
     });
 
-    // Save the booking to the database
     const booking = await newBooking.save();
     res.status(201).json({
       msg: "Booking confirmed successfully!",
@@ -124,11 +187,46 @@ app.get("/api/packages/:id", async (req, res) => {
   }
 });
 
+// --- Protected Admin Endpoints ---
+
+/**
+ * @route GET /api/bookings
+ * @desc Returns all bookings from the database (PROTECTED)
+ */
+app.get("/api/bookings", authMiddleware, async (req, res) => {
+  try {
+    const bookings = await Booking.find({}).sort({ date: -1 });
+    res.json(bookings);
+  } catch (err) {
+    console.error("Bookings fetch error:", err);
+    res.status(500).json({ msg: "Server error fetching bookings." });
+  }
+});
+
+/**
+ * @route DELETE /api/bookings/:id
+ * @desc Deletes a booking (PROTECTED)
+ */
+app.delete("/api/bookings/:id", authMiddleware, async (req, res) => {
+  try {
+    const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
+
+    if (!deletedBooking) {
+      return res.status(404).json({ msg: "Booking not found." });
+    }
+
+    res.json({ msg: "Booking deleted successfully." });
+  } catch (err) {
+    console.error("Booking deletion error:", err);
+    res.status(500).json({ msg: "Server error deleting booking." });
+  }
+});
+
 /**
  * @route POST /api/packages
- * @desc Creates a new package.
+ * @desc Creates a new package (PROTECTED)
  */
-app.post("/api/packages", async (req, res) => {
+app.post("/api/packages", authMiddleware, async (req, res) => {
   try {
     const { name, price, description, features } = req.body;
 
@@ -160,9 +258,9 @@ app.post("/api/packages", async (req, res) => {
 
 /**
  * @route PUT /api/packages/:id
- * @desc Updates an existing package.
+ * @desc Updates an existing package (PROTECTED)
  */
-app.put("/api/packages/:id", async (req, res) => {
+app.put("/api/packages/:id", authMiddleware, async (req, res) => {
   try {
     const { name, price, description, features } = req.body;
 
@@ -185,9 +283,9 @@ app.put("/api/packages/:id", async (req, res) => {
 
 /**
  * @route DELETE /api/packages/:id
- * @desc Deletes a package.
+ * @desc Deletes a package (PROTECTED)
  */
-app.delete("/api/packages/:id", async (req, res) => {
+app.delete("/api/packages/:id", authMiddleware, async (req, res) => {
   try {
     const deletedPackage = await Package.findByIdAndDelete(req.params.id);
 
@@ -202,54 +300,12 @@ app.delete("/api/packages/:id", async (req, res) => {
   }
 });
 
-/**
- * @route GET /api/bookings
- * @desc Returns all bookings from the database.
- */
-app.get("/api/bookings", async (req, res) => {
-  try {
-    const bookings = await Booking.find({}).sort({ date: -1 });
-    res.json(bookings);
-  } catch (err) {
-    console.error("Bookings fetch error:", err);
-    res.status(500).json({ msg: "Server error fetching bookings." });
-  }
-});
-
-/**
- * @route DELETE /api/bookings/:id
- * @desc Deletes a booking.
- */
-app.delete("/api/bookings/:id", async (req, res) => {
-  try {
-    const deletedBooking = await Booking.findByIdAndDelete(req.params.id);
-
-    if (!deletedBooking) {
-      return res.status(404).json({ msg: "Booking not found." });
-    }
-
-    res.json({ msg: "Booking deleted successfully." });
-  } catch (err) {
-    console.error("Booking deletion error:", err);
-    res.status(500).json({ msg: "Server error deleting booking." });
-  }
-});
-
 // --- Static Files (must come AFTER API routes) ---
 app.use(express.static(path.join(__dirname, "public")));
-
-// OPTIONAL: If you're using a single-page application (React/Vue/SPA),
-// uncomment this so refresh routes work.
-/*
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-*/
 
 // --- Server Start ---
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(
-    `Admin dashboard available at http://localhost:${PORT}/admin.html`
-  );
+  console.log(`Admin login at http://localhost:${PORT}/login.html`);
+  console.log(`Admin dashboard at http://localhost:${PORT}/admin.html`);
 });

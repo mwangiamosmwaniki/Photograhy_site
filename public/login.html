@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login - Lens & Light</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .login-container h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+      }
+
+      .login-container .form-group {
+        margin-bottom: 20px;
+      }
+
+      .login-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #555;
+      }
+
+      .login-container input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+      }
+
+      .login-container input:focus {
+        outline: none;
+        border-color: #333;
+      }
+
+      .login-container .btn {
+        width: 100%;
+        padding: 12px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      .login-container .btn:hover {
+        background: #555;
+      }
+
+      .login-container .btn:disabled {
+        background: #999;
+        cursor: not-allowed;
+      }
+
+      .alert {
+        padding: 12px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+        display: none;
+      }
+
+      .alert.error {
+        background: #fee;
+        color: #c33;
+        border: 1px solid #fcc;
+      }
+
+      .alert.success {
+        background: #efe;
+        color: #3c3;
+        border: 1px solid #cfc;
+      }
+
+      .back-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .back-link a {
+        color: #333;
+        text-decoration: none;
+      }
+
+      .back-link a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h1>Admin Login</h1>
+
+      <div id="alert" class="alert"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button type="submit" class="btn" id="login-btn">Login</button>
+      </form>
+
+      <div class="back-link">
+        <a href="index.html">← Back to Home</a>
+      </div>
+    </div>
+
+    <script>
+      // Check if already logged in
+      if (localStorage.getItem("adminToken")) {
+        window.location.href = "admin.html";
+      }
+
+      const loginForm = document.getElementById("login-form");
+      const loginBtn = document.getElementById("login-btn");
+      const alertDiv = document.getElementById("alert");
+
+      function showAlert(message, type) {
+        alertDiv.textContent = message;
+        alertDiv.className = `alert ${type}`;
+        alertDiv.style.display = "block";
+
+        if (type === "success") {
+          setTimeout(() => {
+            alertDiv.style.display = "none";
+          }, 2000);
+        }
+      }
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        loginBtn.disabled = true;
+        loginBtn.textContent = "Logging in...";
+
+        try {
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showAlert("Login successful! Redirecting...", "success");
+            localStorage.setItem("adminToken", data.token);
+            setTimeout(() => {
+              window.location.href = "admin.html";
+            }, 1000);
+          } else {
+            showAlert(data.msg || "Login failed. Please try again.", "error");
+            loginBtn.disabled = false;
+            loginBtn.textContent = "Login";
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          showAlert("Network error. Please try again.", "error");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+        }
+      });
+    </script>
+  </body>
+</html>

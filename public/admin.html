@@ -339,6 +339,88 @@
           Photography Packages
         </button>
         <button class="tab" onclick="switchTab('bookings')">Bookings</button>
+        <button class="tab" onclick="switchTab('users')">Users</button>
+        <button
+          class="btn btn-danger"
+          style="margin-left: auto"
+          onclick="logout()"
+        >
+          Logout
+        </button>
+      </div>
+
+      <!-- Users Tab -->
+      <div id="users" class="tab-content">
+        <div class="section-header">
+          <h2>Manage Users</h2>
+          <button class="btn btn-primary" onclick="openUserModal()">
+            + Add User
+          </button>
+        </div>
+
+        <div id="usersLoading" class="loading">Loading users...</div>
+        <div id="usersContent" style="display: none">
+          <div class="table-container">
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="usersEmpty" class="empty-state" style="display: none">
+          <p>No users found.</p>
+        </div>
+      </div>
+
+      <!-- User Modal -->
+      <div id="userModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 id="userModalTitle">Add User</h3>
+            <button class="close-btn" onclick="closeUserModal()">
+              &times;
+            </button>
+          </div>
+          <form id="userForm">
+            <input type="hidden" id="userId" />
+            <div class="form-group">
+              <label for="userName">Name *</label>
+              <input type="text" id="userName" required />
+            </div>
+            <div class="form-group">
+              <label for="userEmail">Email *</label>
+              <input type="email" id="userEmail" required />
+            </div>
+            <div class="form-group">
+              <label for="userRole">Role *</label>
+              <select id="userRole" required>
+                <option value="admin">Admin</option>
+                <option value="staff">Staff</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="userPassword">Password *</label>
+              <input type="password" id="userPassword" required />
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem">
+              <button type="submit" class="btn btn-success">Save User</button>
+              <button
+                type="button"
+                class="btn btn-secondary"
+                onclick="closeUserModal()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- Packages Tab -->
@@ -493,6 +575,59 @@
     </div>
 
     <script>
+      // Add this script at the top of your admin.html file, before any other scripts
+
+      // Check authentication
+      (async function checkAuth() {
+        const token = localStorage.getItem("adminToken");
+
+        if (!token) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/auth/verify", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            localStorage.removeItem("adminToken");
+            window.location.href = "login.html";
+          }
+        } catch (error) {
+          console.error("Auth verification error:", error);
+          localStorage.removeItem("adminToken");
+          window.location.href = "login.html";
+        }
+      })();
+
+      // Logout function
+      function logout() {
+        localStorage.removeItem("adminToken");
+        window.location.href = "login.html";
+      }
+
+      // Update all fetch requests to include the auth token
+      const originalFetch = window.fetch;
+      window.fetch = function (...args) {
+        const token = localStorage.getItem("adminToken");
+        if (token && args[1]) {
+          args[1].headers = {
+            ...args[1].headers,
+            Authorization: `Bearer ${token}`,
+          };
+        } else if (token) {
+          args[1] = {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          };
+        }
+        return originalFetch.apply(this, args);
+      };
       let currentPackageId = null;
       let packagesData = [];
       let bookingsData = [];
@@ -833,6 +968,159 @@
       document.addEventListener("DOMContentLoaded", () => {
         loadPackages();
       });
+
+      let usersData = [];
+      let currentUserId = null;
+
+      // Load Users
+      async function loadUsers() {
+        try {
+          const response = await fetch("/api/users");
+          usersData = await response.json();
+
+          document.getElementById("usersLoading").style.display = "none";
+
+          if (usersData.length === 0) {
+            document.getElementById("usersEmpty").style.display = "block";
+            document.getElementById("usersContent").style.display = "none";
+          } else {
+            document.getElementById("usersEmpty").style.display = "none";
+            document.getElementById("usersContent").style.display = "block";
+            renderUsers();
+          }
+        } catch (error) {
+          console.error("Error loading users:", error);
+          alert("Failed to load users");
+        }
+      }
+
+      function renderUsers() {
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = "";
+
+        usersData.forEach((user) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+      <td>${user.name}</td>
+      <td>${user.email}</td>
+      <td>${user.role}</td>
+      <td>
+        <div class="actions">
+          <button class="icon-btn btn-primary" onclick="editUser('${user._id}')">Edit</button>
+          <button class="icon-btn btn-danger" onclick="deleteUser('${user._id}','${user.name}')">Delete</button>
+        </div>
+      </td>
+    `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // User Modal
+      function openUserModal(userId = null) {
+        currentUserId = userId;
+        const modal = document.getElementById("userModal");
+        const form = document.getElementById("userForm");
+        form.reset();
+
+        if (userId) {
+          document.getElementById("userModalTitle").textContent = "Edit User";
+          const user = usersData.find((u) => u._id === userId);
+          if (user) {
+            document.getElementById("userId").value = user._id;
+            document.getElementById("userName").value = user.name;
+            document.getElementById("userEmail").value = user.email;
+            document.getElementById("userRole").value = user.role;
+            document.getElementById("userPassword").required = false;
+          }
+        } else {
+          document.getElementById("userModalTitle").textContent = "Add User";
+          document.getElementById("userPassword").required = true;
+        }
+
+        modal.classList.add("active");
+      }
+
+      function closeUserModal() {
+        document.getElementById("userModal").classList.remove("active");
+        currentUserId = null;
+      }
+
+      // Submit User Form
+      document
+        .getElementById("userForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const userData = {
+            name: document.getElementById("userName").value,
+            email: document.getElementById("userEmail").value,
+            role: document.getElementById("userRole").value,
+            password: document.getElementById("userPassword").value,
+          };
+
+          try {
+            const url = currentUserId
+              ? `/api/users/${currentUserId}`
+              : "/api/users";
+            const method = currentUserId ? "PUT" : "POST";
+
+            const response = await fetch(url, {
+              method: method,
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(userData),
+            });
+
+            if (response.ok) {
+              closeUserModal();
+              loadUsers();
+              alert(currentUserId ? "User updated!" : "User created!");
+            } else {
+              alert("Failed to save user");
+            }
+          } catch (error) {
+            console.error("Error saving user:", error);
+            alert("Error saving user");
+          }
+        });
+
+      async function editUser(id) {
+        openUserModal(id);
+      }
+
+      async function deleteUser(id, name) {
+        if (!confirm(`Delete user "${name}"?`)) return;
+        try {
+          const response = await fetch(`/api/users/${id}`, {
+            method: "DELETE",
+          });
+          if (response.ok) {
+            loadUsers();
+            alert("User deleted!");
+          } else {
+            alert("Failed to delete user");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Error deleting user");
+        }
+      }
+
+      let logoutTimer;
+
+      function resetLogoutTimer() {
+        clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(() => {
+          alert("You have been logged out due to inactivity.");
+          logout();
+        }, 30 * 60 * 1000); // 30 minutes
+      }
+
+      // Listen for activity
+      ["mousemove", "keydown", "click"].forEach((event) =>
+        document.addEventListener(event, resetLogoutTimer)
+      );
+
+      resetLogoutTimer(); // start timer
     </script>
   </body>
 </html>
