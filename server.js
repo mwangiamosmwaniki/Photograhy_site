@@ -300,6 +300,114 @@ app.delete("/api/packages/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// --- User Management Endpoints (PROTECTED) ---
+
+/**
+ * @route GET /api/users
+ * @desc Get all users (PROTECTED)
+ */
+app.get("/api/users", authMiddleware, async (req, res) => {
+  try {
+    const users = await User.find({}, "-password").sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    console.error("Users fetch error:", err);
+    res.status(500).json({ msg: "Server error fetching users." });
+  }
+});
+
+/**
+ * @route POST /api/users
+ * @desc Create a new user (PROTECTED)
+ */
+app.post("/api/users", authMiddleware, async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+
+    if (!username || !password) {
+      return res
+        .status(400)
+        .json({ msg: "Username and password are required." });
+    }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(409).json({ msg: "Username already exists." });
+    }
+
+    const newUser = new User({
+      username,
+      password,
+      role: role || "admin",
+    });
+
+    await newUser.save();
+
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
+    res.status(201).json(userResponse);
+  } catch (err) {
+    console.error("User creation error:", err);
+    res.status(500).json({ msg: "Server error creating user." });
+  }
+});
+
+/**
+ * @route PUT /api/users/:id
+ * @desc Update a user (PROTECTED)
+ */
+app.put("/api/users/:id", authMiddleware, async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    if (username) user.username = username;
+    if (role) user.role = role;
+    if (password) user.password = password;
+
+    await user.save();
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json(userResponse);
+  } catch (err) {
+    console.error("User update error:", err);
+    res.status(500).json({ msg: "Server error updating user." });
+  }
+});
+
+/**
+ * @route DELETE /api/users/:id
+ * @desc Delete a user (PROTECTED)
+ */
+app.delete("/api/users/:id", authMiddleware, async (req, res) => {
+  try {
+    // Prevent deleting yourself
+    if (req.user.id === req.params.id) {
+      return res
+        .status(400)
+        .json({ msg: "You cannot delete your own account." });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(req.params.id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ msg: "User not found." });
+    }
+
+    res.json({ msg: "User deleted successfully." });
+  } catch (err) {
+    console.error("User deletion error:", err);
+    res.status(500).json({ msg: "Server error deleting user." });
+  }
+});
+
 // --- Static Files (must come AFTER API routes) ---
 app.use(express.static(path.join(__dirname, "public")));
 
