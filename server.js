@@ -300,6 +300,11 @@ app.delete("/api/packages/:id", authMiddleware, async (req, res) => {
   }
 });
 
+// ---image management endpoints would go here---
+app.use("/api/portfolio", require("./routes/portfolioRoutes"));
+app.use("/admin/api/portfolio", require("./routes/adminPortfolioRoutes"));
+app.use("/uploads", express.static("uploads"));
+
 // --- User Management Endpoints (PROTECTED) ---
 
 /**

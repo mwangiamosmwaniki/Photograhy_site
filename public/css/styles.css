@@ -107,21 +107,45 @@ header:hover {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
 }
 
+/* Logo container */
 .logo {
-  font-family: var(--font-heading);
-  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-color), var(--warm-accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: transform var(--transition-normal);
-  white-space: nowrap;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
 }
 
-.logo:hover {
+/* Logo image */
+.logo img {
+  height: 48px; /* Desktop size */
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+/* Subtle hover effect */
+.logo:hover img {
   transform: scale(1.05);
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .logo img {
+    height: 42px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .logo img {
+    height: 36px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .logo img {
+    height: 32px;
+  }
 }
 
 .nav-links {

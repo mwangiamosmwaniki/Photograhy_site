@@ -312,146 +312,170 @@
         color: white;
       }
 
-      /* ===============================
-   RESPONSIVE STYLES
-   =============================== */
+      /* Portfolio Grid Styles */
+      .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
 
-      /* Tablets (<= 1024px) */
+      .portfolio-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .portfolio-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .portfolio-item img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        display: block;
+      }
+
+      .portfolio-item-info {
+        padding: 1rem;
+      }
+
+      .portfolio-item-info h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        color: #2c3e50;
+      }
+
+      .portfolio-item-info .category {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #ecf0f1;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        margin-bottom: 0.75rem;
+      }
+
+      .portfolio-item-info button {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+
+      /* RESPONSIVE STYLES */
       @media (max-width: 1024px) {
         .container {
           padding: 1.5rem;
         }
-
         .header {
           padding: 1rem 1.5rem;
         }
-
         .section-header h2 {
           font-size: 1.6rem;
         }
-
         th,
         td {
           padding: 0.75rem;
         }
       }
 
-      /* Mobile (<= 768px) */
       @media (max-width: 768px) {
-        /* Header */
         .header {
           flex-direction: column;
           align-items: flex-start;
           gap: 1rem;
         }
-
         .header h1 {
           font-size: 1.3rem;
         }
-
         .header-actions {
           width: 100%;
           justify-content: space-between;
           flex-wrap: wrap;
           gap: 0.75rem;
         }
-
-        /* Tabs */
         .tabs {
           overflow-x: auto;
           white-space: nowrap;
           gap: 0.5rem;
         }
-
         .tab {
           padding: 0.75rem 1.25rem;
           font-size: 0.9rem;
         }
-
-        /* Section header */
         .section-header {
           flex-direction: column;
           align-items: flex-start;
           gap: 1rem;
         }
-
-        /* Buttons */
         .btn {
           width: 100%;
           text-align: center;
         }
-
-        /* Tables */
         table {
           font-size: 0.9rem;
         }
-
         th,
         td {
           padding: 0.75rem 0.5rem;
         }
-
-        /* Action buttons inside tables */
         .actions {
           flex-direction: column;
           align-items: stretch;
         }
-
         .icon-btn {
           width: 100%;
         }
-
-        /* Modal */
         .modal.active {
           padding: 1rem;
         }
-
         .modal-content {
           padding: 1.5rem;
         }
-
-        /* Forms */
         .feature-item {
           flex-direction: column;
           align-items: stretch;
         }
-
         .feature-item button {
           width: 100%;
         }
+        .portfolio-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 1rem;
+        }
       }
 
-      /* Small phones (<= 480px) */
       @media (max-width: 480px) {
         body {
           font-size: 0.9rem;
         }
-
         .header h1 {
           font-size: 1.15rem;
         }
-
         .stat-card h3 {
           font-size: 1.6rem;
         }
-
         .stat-card {
           padding: 1.25rem;
         }
-
         .badge {
           font-size: 0.75rem;
         }
-
         .modal-content {
           max-height: 95vh;
+        }
+        .portfolio-grid {
+          grid-template-columns: 1fr;
         }
       }
     </style>
   </head>
   <body>
     <div class="header">
-      <h1>Admin Dashboard - Lens & Light</h1>
+      <h1>Admin Dashboard - Jr Photography</h1>
       <div class="header-actions">
         <div class="user-info">
           <span id="currentUsername">Admin</span>
@@ -469,9 +493,13 @@
         <button class="tab" onclick="switchTab(event, 'bookings')">
           Bookings
         </button>
+        <button class="tab" onclick="switchTab(event, 'portfolio')">
+          Portfolio
+        </button>
         <button class="tab" onclick="switchTab(event, 'users')">Users</button>
       </div>
 
+      <!-- PACKAGES TAB -->
       <div id="packages" class="tab-content active">
         <div class="section-header">
           <h2>Manage Packages</h2>
@@ -501,6 +529,7 @@
         </div>
       </div>
 
+      <!-- BOOKINGS TAB -->
       <div id="bookings" class="tab-content">
         <div class="section-header"><h2>Manage Bookings</h2></div>
         <div class="stats">
@@ -537,6 +566,79 @@
         </div>
       </div>
 
+      <!-- PORTFOLIO TAB -->
+      <div id="portfolio" class="tab-content">
+        <div class="section-header">
+          <h2>Portfolio Management</h2>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="card">
+          <h3 style="margin-bottom: 1rem">Upload Portfolio Image</h3>
+          <form
+            id="portfolioUploadForm"
+            enctype="multipart/form-data"
+            style="max-width: 600px"
+          >
+            <div class="form-group">
+              <label>Title *</label>
+              <input
+                type="text"
+                name="title"
+                placeholder="e.g., Beach Wedding Ceremony"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Alt Text (for SEO & Accessibility) *</label>
+              <input
+                type="text"
+                name="altText"
+                placeholder="Describe the image for screen readers"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Category *</label>
+              <select name="category" required>
+                <option value="">Select Category</option>
+                <option value="wedding">Wedding</option>
+                <option value="portrait">Portrait</option>
+                <option value="event">Event</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Image *</label>
+              <input type="file" name="image" accept="image/*" required />
+              <small style="color: #7f8c8d; display: block; margin-top: 0.5rem">
+                Supported formats: JPG, PNG, GIF, WebP (Max 10MB)
+              </small>
+            </div>
+
+            <button type="submit" class="btn btn-success">Upload Image</button>
+          </form>
+          <div
+            id="uploadStatus"
+            style="margin-top: 1rem; font-weight: 500"
+          ></div>
+        </div>
+
+        <!-- Portfolio Grid -->
+        <div class="card">
+          <h3 style="margin-bottom: 1rem">Uploaded Images</h3>
+          <div id="portfolioLoading" class="loading">Loading portfolio...</div>
+          <div id="portfolioGrid" class="portfolio-grid"></div>
+          <div id="portfolioEmpty" class="empty-state" style="display: none">
+            No portfolio items yet. Upload your first image above!
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS TAB -->
       <div id="users" class="tab-content">
         <div class="section-header">
           <h2>User Management</h2>
@@ -566,6 +668,7 @@
       </div>
     </div>
 
+    <!-- PACKAGE MODAL -->
     <div id="packageModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -577,12 +680,12 @@
         <form id="packageForm">
           <input type="hidden" id="packageId" />
           <div class="form-group">
-            <label>Package Name *</label
-            ><input type="text" id="packageName" required />
+            <label>Package Name *</label>
+            <input type="text" id="packageName" required />
           </div>
           <div class="form-group">
-            <label>Price (Ksh) *</label
-            ><input
+            <label>Price (Ksh) *</label>
+            <input
               type="number"
               id="packagePrice"
               min="0"
@@ -591,8 +694,8 @@
             />
           </div>
           <div class="form-group">
-            <label>Description *</label
-            ><textarea id="packageDescription" required></textarea>
+            <label>Description *</label>
+            <textarea id="packageDescription" required></textarea>
           </div>
           <div class="form-group">
             <label>Features</label>
@@ -606,8 +709,8 @@
             </button>
           </div>
           <div style="display: flex; gap: 1rem; margin-top: 2rem">
-            <button type="submit" class="btn btn-success">Save</button
-            ><button
+            <button type="submit" class="btn btn-success">Save</button>
+            <button
               type="button"
               class="btn btn-secondary"
               onclick="closePackageModal()"
@@ -619,6 +722,7 @@
       </div>
     </div>
 
+    <!-- USER MODAL -->
     <div id="userModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -628,25 +732,25 @@
         <form id="userForm">
           <input type="hidden" id="userId" />
           <div class="form-group">
-            <label>Username *</label
-            ><input type="text" id="userUsername" required />
+            <label>Username *</label>
+            <input type="text" id="userUsername" required />
           </div>
           <div class="form-group">
-            <label>Password *</label
-            ><input type="password" id="userPassword" required /><small
-              style="color: #7f8c8d"
-              >Leave blank to keep current (when editing)</small
-            >
+            <label>Password *</label>
+            <input type="password" id="userPassword" required />
+            <small style="color: #7f8c8d">
+              Leave blank to keep current (when editing)
+            </small>
           </div>
           <div class="form-group">
-            <label>Role *</label
-            ><select id="userRole" required>
+            <label>Role *</label>
+            <select id="userRole" required>
               <option value="admin">Admin</option>
             </select>
           </div>
           <div style="display: flex; gap: 1rem; margin-top: 2rem">
-            <button type="submit" class="btn btn-success">Save</button
-            ><button
+            <button type="submit" class="btn btn-success">Save</button>
+            <button
               type="button"
               class="btn btn-secondary"
               onclick="closeUserModal()"
@@ -655,6 +759,41 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div id="confirmDialog" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="confirmTitle">Confirm Action</h3>
+          <button class="close-btn" onclick="closeConfirmDialog()">
+            &times;
+          </button>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+          "
+        >
+          <div id="confirmIcon" style="font-size: 2rem">⚠️</div>
+          <p id="confirmMessage">Are you sure?</p>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 1rem">
+          <button
+            id="confirmActionBtn"
+            class="btn btn-danger"
+            onclick="confirmAction()"
+          >
+            Confirm
+          </button>
+          <button class="btn btn-secondary" onclick="closeConfirmDialog()">
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
 

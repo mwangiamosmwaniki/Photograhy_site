@@ -9,6 +9,10 @@ let currentUserId = null;
 let packagesData = [];
 let bookingsData = [];
 let usersData = [];
+let portfolioData = [];
+
+// Confirm callback
+let confirmCallback = null;
 
 // Authentication and Session Management
 (async function checkAuth() {
@@ -46,14 +50,18 @@ function resetInactivityTimer() {
   inactivityTimer = setTimeout(() => {
     if (!logoutWarningShown) {
       logoutWarningShown = true;
-      const shouldStay = confirm(
-        "You've been inactive for 30 minutes. You'll be logged out in 30 seconds. Click OK to stay logged in."
-      );
-      if (shouldStay) {
-        resetInactivityTimer();
-      } else {
-        setTimeout(() => logout(), 30000);
-      }
+      showConfirm({
+        title: "Inactivity Logout",
+        message:
+          "You've been inactive for 30 minutes. You'll be logged out in 30 seconds. Click Confirm to stay logged in.",
+        type: "warning",
+        confirmText: "Stay Logged In",
+        confirmClass: "btn-primary",
+        onConfirm: () => {
+          resetInactivityTimer();
+        },
+      });
+      setTimeout(() => logout(), 30000);
     }
   }, SESSION_TIMEOUT);
 }
@@ -86,18 +94,35 @@ window.fetch = function (...args) {
 
 // Tab Switching
 function switchTab(event, tabName) {
+  // Remove active classes
   document
     .querySelectorAll(".tab")
     .forEach((tab) => tab.classList.remove("active"));
   document
     .querySelectorAll(".tab-content")
     .forEach((content) => content.classList.remove("active"));
+
+  // Set active classes
   event.target.classList.add("active");
   document.getElementById(tabName).classList.add("active");
 
+  // Call your specific tab loaders
   if (tabName === "bookings") loadBookings();
   else if (tabName === "users") loadUsers();
+  else if (tabName === "portfolio") loadPortfolio();
+
+  // Save the active tab in localStorage
+  localStorage.setItem("activeTab", tabName);
 }
+
+// On page load, restore the active tab
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTab = localStorage.getItem("activeTab") || "packages"; // default tab
+  const tabButton = document.querySelector(`.tab[onclick*="'${savedTab}'"]`);
+  if (tabButton) {
+    tabButton.click(); // triggers switchTab
+  }
+});
 
 // Packages
 async function loadPackages() {
@@ -116,7 +141,11 @@ async function loadPackages() {
     }
   } catch (error) {
     console.error("Error loading packages:", error);
-    alert("Failed to load packages");
+    showToast({
+      title: "Error",
+      message: "Failed to load packages",
+      type: "error",
+    });
   }
 }
 
@@ -225,34 +254,30 @@ document.getElementById("packageForm").addEventListener("submit", async (e) => {
     if (response.ok) {
       closePackageModal();
       loadPackages();
-      alert(currentPackageId ? "Package updated!" : "Package created!");
+      showToast({
+        title: "Success",
+        message: currentPackageId ? "Package updated!" : "Package created!",
+        type: "success",
+      });
     } else {
-      alert("Failed to save package");
+      showToast({
+        title: "Error",
+        message: "Failed to save package",
+        type: "error",
+      });
     }
   } catch (error) {
     console.error("Error saving package:", error);
-    alert("Error saving package");
+    showToast({
+      title: "Error",
+      message: "Error saving package",
+      type: "error",
+    });
   }
 });
 
 function editPackage(id) {
   openPackageModal(id);
-}
-
-async function deletePackage(id, name) {
-  if (!confirm(`Delete "${name}"?`)) return;
-  try {
-    const response = await fetch(`/api/packages/${id}`, { method: "DELETE" });
-    if (response.ok) {
-      loadPackages();
-      alert("Package deleted!");
-    } else {
-      alert("Failed to delete package");
-    }
-  } catch (error) {
-    console.error("Error deleting package:", error);
-    alert("Error deleting package");
-  }
 }
 
 // Bookings
@@ -273,7 +298,11 @@ async function loadBookings() {
     }
   } catch (error) {
     console.error("Error loading bookings:", error);
-    alert("Failed to load bookings");
+    showToast({
+      title: "Error",
+      message: "Failed to load bookings",
+      type: "error",
+    });
   }
 }
 
@@ -315,21 +344,83 @@ function renderBookings() {
   });
 }
 
-async function deleteBooking(id, name) {
-  if (!confirm(`Delete booking for "${name}"?`)) return;
+// Portfolio
+async function loadPortfolio() {
   try {
-    const response = await fetch(`/api/bookings/${id}`, { method: "DELETE" });
-    if (response.ok) {
-      loadBookings();
-      alert("Booking deleted!");
+    const response = await fetch("/api/portfolio");
+    portfolioData = await response.json();
+    document.getElementById("portfolioLoading").style.display = "none";
+
+    if (portfolioData.length === 0) {
+      document.getElementById("portfolioEmpty").style.display = "block";
+      document.getElementById("portfolioGrid").style.display = "none";
     } else {
-      alert("Failed to delete booking");
+      document.getElementById("portfolioEmpty").style.display = "none";
+      document.getElementById("portfolioGrid").style.display = "grid";
+      renderPortfolio();
     }
   } catch (error) {
-    console.error("Error deleting booking:", error);
-    alert("Error deleting booking");
+    console.error("Error loading portfolio:", error);
+    document.getElementById("uploadStatus").innerHTML =
+      '<span style="color: #e74c3c;">Failed to load portfolio</span>';
   }
 }
+
+function renderPortfolio() {
+  const grid = document.getElementById("portfolioGrid");
+  grid.innerHTML = "";
+
+  portfolioData.forEach((item) => {
+    const portfolioItem = document.createElement("div");
+    portfolioItem.className = "portfolio-item";
+    portfolioItem.innerHTML = `
+      <img src="${item.imageUrl}" alt="${item.altText}" loading="lazy" />
+      <div class="portfolio-item-info">
+        <h4>${item.title}</h4>
+        <span class="category">${item.category}</span>
+        <button class="btn btn-danger" onclick="deletePortfolioItem('${item._id}', '${item.title}')">
+          Delete
+        </button>
+      </div>
+    `;
+    grid.appendChild(portfolioItem);
+  });
+}
+
+// Handle portfolio upload form submission
+const form = document.getElementById("portfolioUploadForm");
+const status = document.getElementById("uploadStatus");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  status.textContent = "Uploading...";
+  status.style.color = "black";
+
+  const formData = new FormData(form);
+  const token = localStorage.getItem("adminToken");
+
+  try {
+    const response = await fetch("/admin/api/portfolio", {
+      method: "POST",
+      body: formData,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.msg || "Upload failed");
+
+    status.textContent = "Upload successful ✅";
+    status.style.color = "green";
+    form.reset();
+  } catch (err) {
+    console.error("UPLOAD ERROR ↓↓↓");
+    console.error(err);
+
+    status.textContent = err.message || "Upload failed ❌";
+    status.style.color = "red";
+  }
+});
 
 // Users
 async function loadUsers() {
@@ -348,7 +439,11 @@ async function loadUsers() {
     }
   } catch (error) {
     console.error("Error loading users:", error);
-    alert("Failed to load users");
+    showToast({
+      title: "Error",
+      message: "Failed to load users",
+      type: "error",
+    });
   }
 }
 
@@ -428,14 +523,22 @@ document.getElementById("userForm").addEventListener("submit", async (e) => {
     if (response.ok) {
       closeUserModal();
       loadUsers();
-      alert(currentUserId ? "User updated!" : "User created!");
+      showToast({
+        title: "Success",
+        message: currentUserId ? "User updated!" : "User created!",
+        type: "success",
+      });
     } else {
       const data = await response.json();
-      alert(data.msg || "Failed to save user");
+      showToast({
+        title: "Error",
+        message: data.msg || "Failed to save user",
+        type: "error",
+      });
     }
   } catch (error) {
     console.error("Error saving user:", error);
-    alert("Error saving user");
+    showToast({ title: "Error", message: "Error saving user", type: "error" });
   }
 });
 
@@ -443,21 +546,244 @@ function editUser(id) {
   openUserModal(id);
 }
 
+async function deletePackage(id, name) {
+  showConfirm({
+    title: "Delete Package",
+    message: `Delete "${name}"? This action cannot be undone.`,
+    type: "danger",
+    confirmText: "Delete",
+    confirmClass: "btn-danger",
+    onConfirm: async () => {
+      try {
+        const response = await fetch(`/api/packages/${id}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          loadPackages();
+          showToast({
+            title: "Deleted",
+            message: "Package deleted successfully",
+            type: "success",
+          });
+        } else {
+          showToast({
+            title: "Error",
+            message: "Failed to delete package",
+            type: "error",
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        showToast({
+          title: "Error",
+          message: "Error deleting package",
+          type: "error",
+        });
+      }
+    },
+  });
+}
+
+async function deleteBooking(id, name) {
+  showConfirm({
+    title: "Delete Booking",
+    message: `Delete booking for "${name}"?`,
+    type: "danger",
+    confirmText: "Delete",
+    confirmClass: "btn-danger",
+    onConfirm: async () => {
+      try {
+        const response = await fetch(`/api/bookings/${id}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          loadBookings();
+          showToast({
+            title: "Deleted",
+            message: "Booking deleted successfully",
+            type: "success",
+          });
+        } else {
+          showToast({
+            title: "Error",
+            message: "Failed to delete booking",
+            type: "error",
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        showToast({
+          title: "Error",
+          message: "Error deleting booking",
+          type: "error",
+        });
+      }
+    },
+  });
+}
+
 async function deleteUser(id, username) {
-  if (!confirm(`Delete user "${username}"?`)) return;
-  try {
-    const response = await fetch(`/api/users/${id}`, { method: "DELETE" });
-    if (response.ok) {
-      loadUsers();
-      alert("User deleted!");
-    } else {
-      const data = await response.json();
-      alert(data.msg || "Failed to delete user");
-    }
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    alert("Error deleting user");
+  showConfirm({
+    title: "Delete User",
+    message: `Delete user "${username}"?`,
+    type: "danger",
+    confirmText: "Delete",
+    confirmClass: "btn-danger",
+    onConfirm: async () => {
+      try {
+        const response = await fetch(`/api/users/${id}`, { method: "DELETE" });
+        if (response.ok) {
+          loadUsers();
+          showToast({
+            title: "Deleted",
+            message: "User deleted successfully",
+            type: "success",
+          });
+        } else {
+          const data = await response.json();
+          showToast({
+            title: "Error",
+            message: data.msg || "Failed to delete user",
+            type: "error",
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        showToast({
+          title: "Error",
+          message: "Error deleting user",
+          type: "error",
+        });
+      }
+    },
+  });
+}
+
+async function deletePortfolioItem(id, title) {
+  showConfirm({
+    title: "Delete Portfolio Item",
+    message: `Delete "${title}"? This action cannot be undone.`,
+    type: "danger",
+    confirmText: "Delete",
+    confirmClass: "btn-danger",
+    onConfirm: async () => {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const response = await fetch(`/admin/api/portfolio/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.msg || "Failed to delete portfolio item");
+        loadPortfolio();
+        showToast({
+          title: "Deleted",
+          message: "Portfolio item deleted",
+          type: "success",
+        });
+      } catch (err) {
+        console.error(err);
+        showToast({
+          title: "Error",
+          message: err.message || "Error deleting portfolio item",
+          type: "error",
+        });
+      }
+    },
+  });
+}
+
+// ========== CONFIRMATION DIALOG ==========
+function showConfirm(options = {}) {
+  const {
+    title = "Confirm Action",
+    message = "Are you sure?",
+    type = "warning",
+    confirmText = "Confirm",
+    confirmClass = "btn-danger",
+    onConfirm = () => {},
+  } = options;
+
+  const dialog = document.getElementById("confirmDialog");
+  const icon = document.getElementById("confirmIcon");
+  const titleEl = document.getElementById("confirmTitle");
+  const messageEl = document.getElementById("confirmMessage");
+  const confirmBtn = document.getElementById("confirmActionBtn");
+
+  const icons = {
+    danger: "🗑️",
+    warning: "⚠️",
+    info: "ℹ️",
+    success: "✓",
+  };
+
+  confirmCallback = null; // Reset previous callback
+
+  icon.textContent = icons[type] || icons.warning;
+  icon.className = `confirm-icon ${type}`;
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  confirmBtn.textContent = confirmText;
+  confirmBtn.className = `btn ${confirmClass}`;
+
+  confirmCallback = typeof onConfirm === "function" ? onConfirm : null;
+
+  dialog.classList.add("active");
+}
+
+function closeConfirmDialog() {
+  document.getElementById("confirmDialog").classList.remove("active");
+  confirmCallback = null;
+}
+
+function confirmAction() {
+  if (confirmCallback) confirmCallback();
+  closeConfirmDialog();
+}
+
+document
+  .getElementById("confirmDialog")
+  .addEventListener("click", function (e) {
+    if (e.target === this) closeConfirmDialog();
+  });
+
+// ========== TOAST NOTIFICATIONS ==========
+function showToast(options) {
+  const {
+    title = "Notification",
+    message = "",
+    type = "info",
+    duration = 4000,
+  } = options;
+
+  const container = document.getElementById("toastContainer");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+
+  const icons = { success: "✓", error: "✕", warning: "⚠", info: "ℹ" };
+
+  toast.innerHTML = `
+    <div class="toast-icon">${icons[type] || icons.info}</div>
+    <div class="toast-content">
+      <p class="toast-title">${title}</p>
+      ${message ? `<p class="toast-message">${message}</p>` : ""}
+    </div>
+    <button class="toast-close" onclick="removeToast(this.parentElement)">×</button>
+  `;
+
+  container.appendChild(toast);
+
+  if (duration > 0) {
+    setTimeout(() => removeToast(toast), duration);
   }
+}
+
+function removeToast(toast) {
+  toast.classList.add("removing");
+  setTimeout(() => {
+    if (toast.parentElement) toast.parentElement.removeChild(toast);
+  }, 300);
 }
 
 // Initialize

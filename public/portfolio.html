@@ -24,13 +24,14 @@
     <meta property="og:type" content="website" />
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
     <link rel="stylesheet" href="css/styles.css" />
   </head>
 
   <body id="portfolio-page">
     <header>
-      <a href="index.html" class="logo">JR Pixels</a>
+      <a href="index.html" class="logo">
+        <img src="images/icon.png" alt="JR Pixels Logo" />
+      </a>
 
       <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
         <div class="bar"></div>
@@ -41,7 +42,7 @@
       <nav class="nav-menu" id="nav-menu">
         <ul class="nav-links">
           <li><a href="index.html">Home</a></li>
-          <li><a href="portfolio.html">Portfolio</a></li>
+          <li><a href="portfolio.html" class="active">Portfolio</a></li>
           <li><a href="services.html">Services</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="contact.html">Contact</a></li>
@@ -57,10 +58,11 @@
       </nav>
     </header>
 
-    <main>
+    <main class="bg-gray-50">
       <section id="portfolio-gallery">
-        <h1 style="text-align: center">Our Featured Work</h1>
+        <h1 class="text-center">Our Featured Work</h1>
 
+        <!-- Filters -->
         <div class="filter-btns">
           <button class="filter-btn active" data-filter="all">All Work</button>
           <button class="filter-btn" data-filter="wedding">Weddings</button>
@@ -71,114 +73,9 @@
           </button>
         </div>
 
-        <div class="gallery">
-          <div class="gallery-item" data-category="wedding">
-            <img
-              src="images/portfolio/wedding-1.jpg"
-              alt="Wedding couple portrait"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Wedding</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="wedding">
-            <img
-              src="images/portfolio/wedding-2.jpg"
-              alt="Bridal detail photography"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Wedding</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-1.jpeg"
-              alt="Fashion portrait photography"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Portrait</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-2.jpeg"
-              alt="Family portrait session"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Portrait</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-3.jpeg"
-              alt="Creative studio lighting portrait"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Portrait</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-4.jpeg"
-              alt="Graduation photography"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Graduation Shots</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-5.jpeg"
-              alt="Birthday portrait session"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Birthday Shots</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="portrait">
-            <img
-              src="images/portfolio/portrait-6.jpeg"
-              alt="Street photography portrait"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Street Photography</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="event">
-            <img
-              src="images/portfolio/event-1.jpg"
-              alt="Corporate gala photography"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Event</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="event">
-            <img
-              src="images/portfolio/event-2.jpg"
-              alt="Concert and live event photography"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Event</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="commercial">
-            <img
-              src="images/portfolio/commercial-1.jpg"
-              alt="Product photography commercial shoot"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Commercial</p></div>
-          </div>
-
-          <div class="gallery-item" data-category="commercial">
-            <img
-              src="images/portfolio/commercial-2.jpg"
-              alt="Food photography commercial session"
-              loading="lazy"
-            />
-            <div class="gallery-item-overlay"><p>Commercial</p></div>
-          </div>
+        <!-- Dynamic Gallery -->
+        <div class="gallery" id="gallery">
+          <!-- Images injected here from DB -->
         </div>
       </section>
     </main>
@@ -190,6 +87,10 @@
       </p>
     </footer>
 
+    <!-- Existing scripts -->
     <script src="js/script.js"></script>
+
+    <!-- Portfolio dynamic loader -->
+    <script src="js/portfolio.js"></script>
   </body>
 </html>
