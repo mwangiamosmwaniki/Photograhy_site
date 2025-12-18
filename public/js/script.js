@@ -136,6 +136,38 @@ document.addEventListener("DOMContentLoaded", () => {
   })();
 });
 
+// --- Load Featured Gallery Items Dynamically ---
+async function loadFeaturedGallery() {
+  try {
+    const response = await fetch("/api/portfolio/featured");
+    const items = await response.json();
+
+    const gallery = document.querySelector("#preview .gallery");
+    gallery.innerHTML = ""; // remove static images
+
+    items.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "gallery-item";
+      div.dataset.category = item.category;
+
+      div.innerHTML = `
+        <img src="${item.imageUrl}" alt="${item.altText}" />
+        <div class="gallery-item-overlay">
+          <p>${
+            item.category.charAt(0).toUpperCase() + item.category.slice(1)
+          }</p>
+        </div>
+      `;
+
+      gallery.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error loading featured gallery:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadFeaturedGallery);
+
 // Set current year in footer
 document.addEventListener("DOMContentLoaded", function () {
   const currentYearSpan = document.getElementById("currentYear");

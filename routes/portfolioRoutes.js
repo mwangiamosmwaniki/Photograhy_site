@@ -13,4 +13,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/featured", async (req, res) => {
+  try {
+    const featured = await Portfolio.find()
+      .sort({ createdAt: -1 }) // latest first
+      .limit(3); // only 3 items
+    res.json(featured);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to load featured portfolio" });
+  }
+});
+
 module.exports = router;
