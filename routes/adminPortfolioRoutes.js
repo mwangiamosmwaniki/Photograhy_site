@@ -1,7 +1,6 @@
 const express = require("express");
 const Portfolio = require("../db/Portfolio");
 const upload = require("../middleware/upload");
-// const { requireAdmin } = require("../middleware/auth"); // use yours
 
 const router = express.Router();
 
@@ -12,7 +11,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       title: req.body.title,
       category: req.body.category,
       altText: req.body.altText,
-      imageUrl: `/uploads/portfolio/${req.file.filename}`,
+      imageUrl: req.file.path, // ✅ Cloudinary URL
+      cloudinaryId: req.file.filename, // ✅ Needed for deletion
     });
 
     res.status(201).json(item);
@@ -29,7 +29,13 @@ router.get("/", async (req, res) => {
 
 /* DELETE */
 router.delete("/:id", async (req, res) => {
-  await Portfolio.findByIdAndDelete(req.params.id);
+  const item = await Portfolio.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: "Not found" });
+
+  const cloudinary = require("../config/cloudinary");
+  await cloudinary.uploader.destroy(item.cloudinaryId);
+
+  await item.deleteOne();
   res.json({ success: true });
 });
 

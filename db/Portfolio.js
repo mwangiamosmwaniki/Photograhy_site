@@ -8,7 +8,8 @@ const portfolioSchema = new mongoose.Schema(
       enum: ["wedding", "portrait", "event", "commercial"],
       required: true,
     },
-    imageUrl: { type: String, required: true },
+    imageUrl: { type: String, required: true }, // Cloudinary URL
+    cloudinaryId: { type: String, required: true }, // Cloudinary public_id
     altText: { type: String, required: true },
   },
   { timestamps: true }
