@@ -4,5 +4,4 @@ dist/
 .env
 node_modules/
 dist/
-seedPackages.js/
-createAdmin.js/
+createAdmin.js
