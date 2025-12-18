@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- SEO Meta Tags -->
-    <title>About Us - Jr Photography | Our Story & Philosophy</title>
+    <title>About Jr Photography | Our Story & Philosophy</title>
     <meta
       name="description"
       content="Learn about Jr Photography, our philosophy, experience, and dedication to capturing authentic, cinematic moments."
@@ -14,19 +14,71 @@
       name="keywords"
       content="about photographer, photography team, wedding photographer, portrait photographer, our story"
     />
+    <meta name="author" content="Jr Photography" />
 
-    <!-- Open Graph -->
+    <!-- Open Graph / Social Sharing -->
     <meta property="og:title" content="About Jr Photography" />
     <meta
       property="og:description"
       content="Discover our philosophy and passion for capturing life's most meaningful moments."
     />
-    <meta property="og:image" content="images/photographer-bio.jpg" />
+    <meta
+      property="og:image"
+      content="https://photography-site-8pct.onrender.com/images/photographer-bio.jpg"
+    />
     <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://photography-site-8pct.onrender.com/about.html"
+    />
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="About Jr Photography" />
+    <meta
+      name="twitter:description"
+      content="Meet the team behind Jr Photography and learn about our approach to authentic, cinematic photography."
+    />
+    <meta
+      name="twitter:image"
+      content="https://photography-site-8pct.onrender.com/images/photographer-bio.jpg"
+    />
+
+    <!-- Canonical URL -->
+    <link
+      rel="canonical"
+      href="https://photography-site-8pct.onrender.com/about.html"
+    />
+
+    <!-- Styles and Favicon -->
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="icon" type="image/png" href="/images/icon.png" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "name": "About Jr Photography",
+        "url": "https://photography-site-8pct.onrender.com/about.html",
+        "mainEntity": {
+          "@type": "ProfessionalService",
+          "name": "Jr Photography",
+          "description": "Capturing authentic, cinematic moments with a focus on natural light and storytelling.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Nyeri",
+            "addressRegion": "Karatina",
+            "addressCountry": "Kenya"
+          }
+        }
+      }
+    </script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </head>
+
   <body>
     <header>
       <a href="index.html" class="logo">
