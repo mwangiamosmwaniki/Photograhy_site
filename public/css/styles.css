@@ -463,7 +463,7 @@ section h2::after {
 .gallery-item img {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* show full image without cropping */
+  object-fit: cover; /* show full image without cropping */
   display: block;
   transition: transform var(--transition-slow);
   background: var(--light-bg); /* optional: fill empty space */
