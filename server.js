@@ -388,7 +388,7 @@ app.post("/api/book", async (req, res) => {
       sendEmailConfirmation(email, bookingDetails, whatsappLink)
         .then(() => console.log("✅ Email sent"))
         .catch((err) => console.error("❌ Email error:", err.message));
-
+      emailSent = true;
       if (emailSent) {
         console.log("✅ Email sent successfully to:", email);
       } else {
