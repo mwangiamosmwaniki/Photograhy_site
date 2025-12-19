@@ -383,23 +383,14 @@ app.post("/api/book", async (req, res) => {
     console.log("📱 WhatsApp link generated:", whatsappLink);
 
     // Send email confirmation - WITH PROPER ERROR HANDLING
-    try {
-      sendEmailConfirmation(email, bookingDetails, whatsappLink)
-        .then(() => console.log("✅ Email sent"))
-        .catch((err) => console.error("❌ Email error:", err.message));
-      if (emailSent) {
-        console.log("✅ Email sent successfully to:", email);
-      } else {
-        console.error("❌ Email sending returned false");
-      }
-    } catch (emailError) {
-      console.error("❌ Email sending error:", emailError);
-      console.error("Error details:", {
-        message: emailError.message,
-        code: emailError.code,
-        command: emailError.command,
+    // Fire-and-forget email sending (non-blocking)
+    sendEmailConfirmation(email, bookingDetails, whatsappLink)
+      .then(() => {
+        console.log("📧 Email sent successfully to:", email);
+      })
+      .catch((err) => {
+        console.error("📧 Email failed:", err.message);
       });
-    }
 
     // Return response (booking still succeeds even if email fails)
     res.status(201).json({
