@@ -98,17 +98,11 @@ const nodemailer = require("nodemailer");
 
 // Email Configuration
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail", // or your email service
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password
+    pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
-  connectionTimeout: 10000,
 });
 
 /**
@@ -205,19 +199,12 @@ We look forward to capturing your special moments!
 /**
  * Send email confirmation with WhatsApp link - IMPROVED VERSION
  */
+/**
+ * Send email confirmation with WhatsApp link - OPTIMIZED VERSION
+ * Removed verification step for faster sending
+ */
 async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
   console.log("📧 Attempting to send email to:", email);
-
-  // Verify transporter configuration first
-  try {
-    if (process.env.NODE_ENV !== "production") {
-      await transporter.verify();
-    }
-    console.log("✅ Email transporter verified successfully");
-  } catch (verifyError) {
-    console.error("❌ Email transporter verification failed:", verifyError);
-    throw new Error(`Email configuration error: ${verifyError.message}`);
-  }
 
   const mailOptions = {
     from: `"Jr Photography" <${process.env.EMAIL_USER}>`,
@@ -331,7 +318,12 @@ async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
     throw error;
   }
 }
-/// IMPROVED BOOKING ENDPOINT - Replace in server.js
+
+/**
+ * OPTIMIZED BOOKING ENDPOINT
+ * - Sends email asynchronously in background
+ * - Returns response immediately to user
+ */
 app.post("/api/book", async (req, res) => {
   try {
     const { name, email, phone, session_type, date, time, notes } = req.body;
@@ -374,7 +366,6 @@ app.post("/api/book", async (req, res) => {
     };
 
     // Generate WhatsApp link
-    // Generate WhatsApp link to your fixed number
     const whatsappLink = generateWhatsAppLink(
       process.env.BUSINESS_WHATSAPP_NUMBER,
       bookingDetails
@@ -382,25 +373,26 @@ app.post("/api/book", async (req, res) => {
 
     console.log("📱 WhatsApp link generated:", whatsappLink);
 
-    // Send email confirmation - WITH PROPER ERROR HANDLING
-    // Fire-and-forget email sending (non-blocking)
+    // 🚀 Send email in background (don't await - fire and forget)
     sendEmailConfirmation(email, bookingDetails, whatsappLink)
       .then(() => {
-        console.log("📧 Email sent successfully to:", email);
+        console.log("✅ Background email sent successfully to:", email);
       })
-      .catch((err) => {
-        console.error("📧 Email failed:", err.message);
+      .catch((emailError) => {
+        console.error("❌ Background email sending error:", emailError);
+        console.error("Error details:", {
+          message: emailError.message,
+          code: emailError.code,
+          command: emailError.command,
+        });
       });
 
-    // Return response (booking still succeeds even if email fails)
+    // ⚡ Return response IMMEDIATELY (don't wait for email)
     res.status(201).json({
       msg: "Booking confirmed successfully!",
       booking_id: booking._id,
       whatsappLink: whatsappLink,
-      debug: {
-        email_attempted: true,
-        whatsapp_link_generated: true,
-      },
+      emailSent: "pending", // Email is being sent in background
     });
   } catch (err) {
     if (err.code === 11000) {
