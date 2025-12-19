@@ -1,5 +1,3 @@
-// public/js/booking.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const bookingForm = document.getElementById("booking-form");
   if (!bookingForm) return; // Only run on the booking page
@@ -316,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
       data.date
     ).toLocaleDateString();
     document.getElementById("conf-time").textContent = data.time;
+    document.getElementById("conf-phone").textContent = data.phone;
 
     confirmationDiv.style.display = "block";
   };

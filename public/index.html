@@ -70,7 +70,262 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <style></style>
+    <style>
+      /* Additional styles for new sections */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 2rem 1rem;
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        transition: all 0.3s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(245, 158, 11, 0.2);
+      }
+
+      .stat-number {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700;
+        color: var(--accent-color);
+        font-family: var(--font-heading);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+      }
+
+      .stat-label {
+        font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+        color: var(--primary-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+      }
+
+      .process-step {
+        position: relative;
+        padding: 2rem;
+        background: var(--light-bg);
+        border-radius: 12px;
+        border-top: 4px solid var(--accent-color);
+        transition: all 0.3s ease;
+      }
+
+      .process-step:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(245, 158, 11, 0.15);
+      }
+
+      .step-number {
+        position: absolute;
+        top: -20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-color),
+          var(--light-accent)
+        );
+        color: var(--white);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        font-family: var(--font-heading);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+      }
+
+      .process-step h3 {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+      }
+
+      .testimonial-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+      }
+
+      .testimonial-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        position: relative;
+        transition: all 0.3s ease;
+      }
+
+      .testimonial-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 16px 40px rgba(245, 158, 11, 0.15);
+      }
+
+      .testimonial-card::before {
+        content: '"';
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        font-size: 4rem;
+        color: var(--accent-color);
+        opacity: 0.2;
+        font-family: var(--font-heading);
+        line-height: 1;
+      }
+
+      .testimonial-text {
+        margin-bottom: 1.5rem;
+        font-style: italic;
+        color: var(--secondary-color);
+        position: relative;
+        z-index: 1;
+      }
+
+      .testimonial-author {
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      .testimonial-role {
+        font-size: 0.9rem;
+        color: var(--accent-color);
+      }
+
+      .rating {
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .info-section {
+        background: var(--light-bg);
+        padding: 3rem 2rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+
+      .info-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-color);
+      }
+
+      .info-card h3 {
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+      }
+
+      .info-card ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .info-card li {
+        padding: 0.5rem 0;
+        padding-left: 1.5rem;
+        position: relative;
+      }
+
+      .info-card li::before {
+        content: "→";
+        position: absolute;
+        left: 0;
+        color: var(--accent-color);
+        font-weight: bold;
+      }
+
+      .faq-container {
+        max-width: 900px;
+        margin: 3rem auto;
+      }
+
+      .faq-item {
+        background: var(--white);
+        margin-bottom: 1rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      }
+
+      .faq-question {
+        width: 100%;
+        text-align: left;
+        padding: 1.5rem;
+        background: var(--light-bg);
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .faq-question:hover {
+        background: var(--accent-color);
+        color: var(--white);
+      }
+
+      .faq-question::after {
+        content: "+";
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+      }
+
+      .faq-question.active::after {
+        transform: rotate(45deg);
+      }
+
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        padding: 0 1.5rem;
+      }
+
+      .faq-answer.active {
+        max-height: 500px;
+        padding: 1.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid,
+        .process-grid,
+        .testimonial-grid,
+        .info-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
 
   <body>
@@ -116,7 +371,7 @@
           <h1>Capturing Life's Most Precious Moments</h1>
           <p>
             Professional photography specializing in weddings, portraits, and
-            events.
+            events. Creating timeless memories that tell your unique story.
           </p>
           <div class="hero-cta">
             <a href="portfolio.html" class="btn">View Portfolio</a>
@@ -125,11 +380,37 @@
         </div>
       </section>
 
+      <!-- Stats Section -->
+      <section id="stats">
+        <h2>Our Journey in Numbers</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Happy Clients</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">1000+</div>
+            <div class="stat-label">Events Covered</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Photos Delivered</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">8+</div>
+            <div class="stat-label">Years Experience</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Featured Work -->
       <section id="preview">
         <h2>Featured Work</h2>
-        <p style="text-align: center; max-width: 600px; margin: 0 auto 40px">
-          A glimpse into our latest sessions and signature styles. Explore the
-          moments we've had the honor of capturing.
+        <p style="text-align: center; max-width: 700px; margin: 0 auto 40px">
+          A glimpse into our latest sessions and signature styles. Each
+          photograph represents a unique story, a special moment frozen in time.
+          From intimate portraits to grand celebrations, we capture the essence
+          of every occasion with artistic vision and technical excellence.
         </p>
 
         <div class="gallery">
@@ -141,16 +422,266 @@
         </div>
       </section>
 
+      <!-- Our Process -->
+      <section id="process" style="background-color: var(--light-bg)">
+        <h2>How We Work</h2>
+        <p style="text-align: center; max-width: 700px; margin: 0 auto 40px">
+          Our streamlined process ensures a smooth, enjoyable experience from
+          consultation to final delivery. We handle every detail so you can
+          focus on enjoying your special moments.
+        </p>
+        <div class="process-grid">
+          <div class="process-step">
+            <div class="step-number">1</div>
+            <h3>Consultation</h3>
+            <p>
+              We start with a detailed conversation to understand your vision,
+              preferences, and specific requirements. This helps us tailor our
+              approach to match your unique style and expectations.
+            </p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">2</div>
+            <h3>Planning</h3>
+            <p>
+              Together, we'll create a comprehensive shot list, timeline, and
+              logistics plan. We scout locations if needed and ensure every
+              detail is accounted for before your session or event.
+            </p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">3</div>
+            <h3>Photo Session</h3>
+            <p>
+              On the day, we arrive early, work efficiently, and capture
+              authentic moments. Our unobtrusive style ensures natural, candid
+              shots while also creating beautiful posed portraits when needed.
+            </p>
+          </div>
+          <div class="process-step">
+            <div class="step-number">4</div>
+            <h3>Editing & Delivery</h3>
+            <p>
+              Your images are professionally edited with our signature style,
+              color-corrected, and delivered through a private online gallery.
+              Prints and albums are available upon request.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- What We Offer -->
+      <section id="services-info">
+        <h2>What We Offer</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>Wedding Photography</h3>
+            <ul>
+              <li>Full-day coverage</li>
+              <li>Engagement sessions included</li>
+              <li>Second photographer available</li>
+              <li>Custom wedding albums</li>
+              <li>Online gallery for sharing</li>
+              <li>High-resolution digital files</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h3>Portrait Sessions</h3>
+            <ul>
+              <li>Individual & family portraits</li>
+              <li>Professional headshots</li>
+              <li>Maternity & newborn photography</li>
+              <li>Senior & graduation photos</li>
+              <li>Creative concept shoots</li>
+              <li>Studio or outdoor locations</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h3>Event Photography</h3>
+            <ul>
+              <li>Corporate events & conferences</li>
+              <li>Birthday celebrations</li>
+              <li>Anniversary parties</li>
+              <li>Product launches</li>
+              <li>Concerts & performances</li>
+              <li>Social gatherings</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h3>Street Photography</h3>
+            <ul>
+              <li>Candid city life shots</li>
+              <li>Urban and cultural photography</li>
+              <li>Street portraits and moments</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h3>Personal Bookings</h3>
+            <ul>
+              <li>One-on-one sessions</li>
+              <li>Custom photography plans</li>
+              <li>Flexible scheduling</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h3>Videography</h3>
+            <ul>
+              <li>Event and wedding videos</li>
+              <li>Short films & promotional clips</li>
+              <li>Drone and cinematic shots</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section id="testimonials" style="background-color: var(--light-bg)">
+        <h2>What Our Clients Say</h2>
+        <p style="text-align: center; max-width: 700px; margin: 0 auto 40px">
+          Don't just take our word for it. Here's what our amazing clients have
+          to say about their experience working with us.
+        </p>
+        <div class="testimonial-grid">
+          <div class="testimonial-card">
+            <div class="rating">★★★★★</div>
+            <p class="testimonial-text">
+              "Jr Photography captured our wedding day perfectly! Every moment,
+              every emotion was beautifully documented. The photos are stunning
+              and we couldn't be happier. Highly recommended!"
+            </p>
+            <div class="testimonial-author">Sarah & James</div>
+            <div class="testimonial-role">Wedding Clients</div>
+          </div>
+          <div class="testimonial-card">
+            <div class="rating">★★★★★</div>
+            <p class="testimonial-text">
+              "Professional, creative, and incredibly talented. Our family
+              portraits exceeded all expectations. The attention to detail and
+              ability to capture genuine smiles was remarkable."
+            </p>
+            <div class="testimonial-author">The Johnson Family</div>
+            <div class="testimonial-role">Portrait Session</div>
+          </div>
+          <div class="testimonial-card">
+            <div class="rating">★★★★★</div>
+            <p class="testimonial-text">
+              "We hired Jr Photography for our corporate event and the results
+              were exceptional. The team was unobtrusive yet captured every
+              important moment. The photos elevated our marketing materials
+              significantly."
+            </p>
+            <div class="testimonial-author">David</div>
+            <div class="testimonial-role">Corporate Client</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ Section -->
+      <section id="faq">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-container">
+          <div class="faq-item">
+            <button class="faq-question">
+              How far in advance should I book?
+            </button>
+            <div class="faq-answer">
+              <p>
+                For weddings and major events, we recommend booking 6-12 months
+                in advance to secure your date. Portrait sessions can typically
+                be booked 2-4 weeks ahead, though we sometimes have last-minute
+                availability.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">
+              What's included in your packages?
+            </button>
+            <div class="faq-answer">
+              <p>
+                All our packages include professional editing, high-resolution
+                digital files, and an online gallery for easy sharing. Specific
+                inclusions vary by package type—wedding packages include
+                engagement sessions, while portrait packages include outfit
+                changes and location options.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">
+              Do you travel for destination events?
+            </button>
+            <div class="faq-answer">
+              <p>
+                Absolutely! We love destination work and are available to travel
+                anywhere in Kenya and internationally. Travel fees vary
+                depending on location and are discussed during the consultation
+                process.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">
+              How long until we receive our photos?
+            </button>
+            <div class="faq-answer">
+              <p>
+                Portrait sessions are typically delivered within 2-3 weeks.
+                Wedding photos take 4-6 weeks due to the extensive editing
+                process. Rush delivery options are available for an additional
+                fee if you need your images sooner.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">
+              Can we request specific shots or styles?
+            </button>
+            <div class="faq-answer">
+              <p>
+                Definitely! We encourage clients to share inspiration photos and
+                shot lists during our consultation. While we bring our creative
+                expertise, we're happy to incorporate your specific requests and
+                preferences into the shoot.
+              </p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">
+              What happens if you're sick or unable to shoot?
+            </button>
+            <div class="faq-answer">
+              <p>
+                We maintain relationships with several trusted professional
+                photographers who match our style and standards. In the rare
+                event of an emergency, we'll arrange a qualified replacement at
+                no additional cost to ensure your event is covered.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA Services -->
       <section
         id="cta-services"
         style="background-color: var(--light-bg); text-align: center"
       >
         <h2>Ready to Begin?</h2>
-        <p>
+        <p style="max-width: 700px; margin: 0 auto 2rem">
           Personalized photography packages tailored to fit every vision and
-          budget. Let's create something beautiful together.
+          budget. Let's create something beautiful together. Whether you're
+          planning a wedding, need professional portraits, or want to capture a
+          special event, we're here to bring your vision to life with artistry
+          and professionalism.
         </p>
         <a href="services.html" class="btn">Explore Packages</a>
+        <a href="contact.html" class="btn secondary">Get in Touch</a>
       </section>
     </main>
 
@@ -159,8 +690,40 @@
         &copy; <span id="currentYear">2025</span> Jr Photography. All rights
         reserved.
       </p>
+      <p style="margin-top: 1rem">
+        Based in Nyeri, Kenya | Serving clients worldwide
+      </p>
+      <p style="margin-top: 0.5rem">
+        <a href="mailto:info@jrphotography.com">info@jrphotography.com</a> |
+        <a href="tel:+254123456789">+254 123 456 789</a>
+      </p>
     </footer>
 
     <script src="js/script.js"></script>
+    <script>
+      // FAQ accordion functionality
+      document.querySelectorAll(".faq-question").forEach((button) => {
+        button.addEventListener("click", () => {
+          const answer = button.nextElementSibling;
+          const isActive = button.classList.contains("active");
+
+          // Close all other FAQs
+          document.querySelectorAll(".faq-question").forEach((btn) => {
+            btn.classList.remove("active");
+            btn.nextElementSibling.classList.remove("active");
+          });
+
+          // Toggle current FAQ
+          if (!isActive) {
+            button.classList.add("active");
+            answer.classList.add("active");
+          }
+        });
+      });
+
+      // Update current year
+      document.getElementById("currentYear").textContent =
+        new Date().getFullYear();
+    </script>
   </body>
 </html>

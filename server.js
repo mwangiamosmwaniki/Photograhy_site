@@ -94,20 +94,248 @@ app.get("/api/auth/verify", authMiddleware, (req, res) => {
 
 // --- Public API Endpoints ---
 
+const nodemailer = require("nodemailer");
+
+// Email Configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or your email service
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 /**
- * @route POST /api/book
- * @desc Inserts a new booking into the database.
+ * @route POST /api/contact
+ * @desc Send email from general contact form
  */
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        msg: "Please include name, email, and message.",
+      });
+    }
+
+    // Email options
+    const mailOptions = {
+      from: `"${name}" <${email}>`,
+      to: process.env.EMAIL_USER,
+      subject: subject || `New contact form message from ${name}`,
+      html: `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject || "N/A"}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("📧 Contact form email sent:", info.messageId);
+
+    res.json({ success: true, msg: "Message sent successfully!" });
+  } catch (err) {
+    console.error("❌ Contact form error:", err);
+    res.status(500).json({ success: false, msg: "Failed to send message." });
+  }
+});
+
+/**
+ * Format phone number for WhatsApp Web link
+ */
+function formatPhoneForWhatsApp(phoneNumber) {
+  // Clean phone number (remove spaces, dashes, parentheses)
+  const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, "");
+
+  // Add country code if not present (assuming Kenya +254)
+  let formattedNumber = cleanNumber;
+  if (!formattedNumber.startsWith("+")) {
+    if (formattedNumber.startsWith("0")) {
+      formattedNumber = "254" + formattedNumber.substring(1);
+    } else if (formattedNumber.startsWith("254")) {
+      formattedNumber = formattedNumber;
+    } else {
+      formattedNumber = "254" + formattedNumber;
+    }
+  } else {
+    // Remove + sign for WhatsApp link
+    formattedNumber = formattedNumber.substring(1);
+  }
+
+  return formattedNumber;
+}
+
+/**
+ * Generate WhatsApp message link
+ */
+function generateWhatsAppLink(phoneNumber, bookingDetails) {
+  const formattedNumber = formatPhoneForWhatsApp(phoneNumber);
+
+  const message = `✅ *Booking Confirmed!*
+
+Hi ${bookingDetails.name},
+
+Your photography session has been confirmed:
+
+📅 *Date:* ${bookingDetails.date}
+⏰ *Time:* ${bookingDetails.time}
+📦 *Package:* ${bookingDetails.session_type}
+
+We look forward to capturing your special moments!
+
+- Jr Photography`;
+
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${formattedNumber}?text=${encodedMessage}`;
+}
+
+/**
+ * Send email confirmation with WhatsApp link
+ */
+/**
+ * Send email confirmation with WhatsApp link - IMPROVED VERSION
+ */
+async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
+  console.log("📧 Attempting to send email to:", email);
+
+  // Verify transporter configuration first
+  try {
+    await transporter.verify();
+    console.log("✅ Email transporter verified successfully");
+  } catch (verifyError) {
+    console.error("❌ Email transporter verification failed:", verifyError);
+    throw new Error(`Email configuration error: ${verifyError.message}`);
+  }
+
+  const mailOptions = {
+    from: `"Jr Photography" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Booking Confirmation - Jr Photography",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+          .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+          .detail-row { margin: 10px 0; padding: 10px; background-color: white; }
+          .label { font-weight: bold; color: #555; }
+          .whatsapp-btn { 
+            display: inline-block; 
+            background-color: #25D366; 
+            color: white; 
+            padding: 15px 30px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            margin: 20px 0;
+            font-weight: bold;
+          }
+          .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Booking Confirmed!</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${bookingDetails.name},</p>
+            <p>Thank you for booking with Jr Photography! Your session has been confirmed.</p>
+            
+            <div class="detail-row">
+              <span class="label">📅 Date:</span> ${bookingDetails.date}
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">⏰ Time:</span> ${bookingDetails.time}
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">📦 Package:</span> ${
+                bookingDetails.session_type
+              }
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">📱 Phone:</span> ${bookingDetails.phone}
+            </div>
+            
+            ${
+              bookingDetails.notes
+                ? `
+            <div class="detail-row">
+              <span class="label">📝 Notes:</span> ${bookingDetails.notes}
+            </div>
+            `
+                : ""
+            }
+            
+            <div style="text-align: center;">
+              <a href="${whatsappLink}" class="whatsapp-btn">
+                💬 Confirm via WhatsApp
+              </a>
+              <p style="font-size: 12px; color: #666;">Click the button above to send us a quick confirmation via WhatsApp</p>
+            </div>
+            
+            <p style="margin-top: 20px;">If you need to reschedule or have any questions, please contact us at ${
+              process.env.EMAIL_USER
+            } or via WhatsApp.</p>
+            
+            <p>We look forward to capturing your special moments!</p>
+            
+            <p style="margin-top: 30px;">Best regards,<br><strong>Jr Photography Team</strong></p>
+          </div>
+          <div class="footer">
+            <p>This is an automated confirmation email. Please do not reply directly to this message.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    console.log("📤 Sending email with options:", {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+    });
+
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("✅ Email sent successfully!");
+    console.log("Message ID:", info.messageId);
+    console.log("Response:", info.response);
+
+    return true;
+  } catch (error) {
+    console.error("❌ Failed to send email:", error);
+    console.error("Error code:", error.code);
+    console.error("Error response:", error.response);
+
+    // Re-throw to be caught by calling function
+    throw error;
+  }
+}
+/// IMPROVED BOOKING ENDPOINT - Replace in server.js
 app.post("/api/book", async (req, res) => {
   try {
     const { name, email, phone, session_type, date, time, notes } = req.body;
 
+    // Validation
     if (!name || !email || !phone || !session_type || !date || !time) {
       return res
         .status(400)
         .json({ msg: "Please include all required fields." });
     }
 
+    // Create the booking
     const newBooking = new Booking({
       name,
       email,
@@ -119,9 +347,66 @@ app.post("/api/book", async (req, res) => {
     });
 
     const booking = await newBooking.save();
+    console.log("✅ Booking saved to database:", booking._id);
+
+    // Prepare booking details
+    const bookingDetails = {
+      name,
+      email,
+      phone,
+      session_type,
+      date: new Date(date).toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+      time,
+      notes,
+    };
+
+    // Generate WhatsApp link
+    // Generate WhatsApp link to your fixed number
+    const whatsappLink = generateWhatsAppLink(
+      process.env.BUSINESS_WHATSAPP_NUMBER,
+      bookingDetails
+    );
+
+    console.log("📱 WhatsApp link generated:", whatsappLink);
+
+    // Send email confirmation - WITH PROPER ERROR HANDLING
+    let emailSent = false;
+    try {
+      emailSent = await sendEmailConfirmation(
+        email,
+        bookingDetails,
+        whatsappLink
+      );
+
+      if (emailSent) {
+        console.log("✅ Email sent successfully to:", email);
+      } else {
+        console.error("❌ Email sending returned false");
+      }
+    } catch (emailError) {
+      console.error("❌ Email sending error:", emailError);
+      console.error("Error details:", {
+        message: emailError.message,
+        code: emailError.code,
+        command: emailError.command,
+      });
+    }
+
+    // Return response (booking still succeeds even if email fails)
     res.status(201).json({
       msg: "Booking confirmed successfully!",
       booking_id: booking._id,
+      whatsappLink: whatsappLink,
+      emailSent: emailSent,
+      debug: {
+        email_attempted: true,
+        whatsapp_link_generated: true,
+      },
     });
   } catch (err) {
     if (err.code === 11000) {
@@ -129,11 +414,12 @@ app.post("/api/book", async (req, res) => {
         msg: "This date and time slot is already booked. Please choose another.",
       });
     }
-    console.error("Booking error:", err);
-    res.status(500).json({ msg: "Server error during booking." });
+    console.error("❌ Booking error:", err);
+    res
+      .status(500)
+      .json({ msg: "Server error during booking.", error: err.message });
   }
 });
-
 /**
  * @route GET /api/availability
  * @desc Returns a list of all booked date/time slots.

@@ -132,14 +132,16 @@
 
             <p>
               <strong>Email:</strong>
-              <a href="mailto:alex@lensandlight.com">alex@lensandlight.com</a>
+              <a href="mailto:sparkysmartin@gmail.com"
+                >sparkysmartin@gmail.com</a
+              >
             </p>
             <p>
               <strong>Phone:</strong>
-              <a href="tel:+15555550101">(555) 555-0101</a>
+              <a href="tel:+254746089480">+254746089480</a>
             </p>
             <p style="margin-top: 20px"><strong>Studio Location:</strong></p>
-            <p>123 Creative St.<br />Studio 4B<br />New York, NY 10001</p>
+            <p>Magereza house, Nairobi, Kenya</p>
 
             <a
               href="https://www.google.com/maps"
@@ -195,25 +197,58 @@
     </main>
 
     <footer>
-      <p>&copy; 2024 Jr Photography. All rights reserved.</p>
+      <p>&copy; 2025 Jr Photography. All rights reserved.</p>
     </footer>
     <script src="js/script.js"></script>
     <script>
-      // Simple client-side status update for the general contact form
       document
         .getElementById("general-contact-form")
-        .addEventListener("submit", function (e) {
+        .addEventListener("submit", async function (e) {
           e.preventDefault();
-          // In a real application, you would use fetch() here to submit data to a dedicated /api/contact endpoint
 
-          // Show confirmation message
-          document.getElementById("contact-status").style.display = "block";
+          const name = document.getElementById("c_name").value.trim();
+          const email = document.getElementById("c_email").value.trim();
+          const subject = document.getElementById("c_subject").value.trim();
+          const message = document.getElementById("c_message").value.trim();
+          const submitButton = this.querySelector("button[type='submit']");
 
-          // Clear the form after a short delay
-          setTimeout(() => {
-            this.reset();
-            document.getElementById("contact-status").style.display = "none";
-          }, 3000);
+          if (!name || !email || !message) {
+            alert("Please fill out all required fields.");
+            return;
+          }
+
+          // Show processing state
+          const originalText = submitButton.innerText;
+          submitButton.innerText = "Processing...";
+          submitButton.disabled = true;
+
+          try {
+            const response = await fetch("/api/contact", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, email, subject, message }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              document.getElementById("contact-status").style.display = "block";
+              this.reset();
+              setTimeout(() => {
+                document.getElementById("contact-status").style.display =
+                  "none";
+              }, 4000);
+            } else {
+              alert(data.msg || "Failed to send message.");
+            }
+          } catch (err) {
+            console.error(err);
+            alert("Error sending message. Please try again later.");
+          } finally {
+            // Restore button state
+            submitButton.innerText = originalText;
+            submitButton.disabled = false;
+          }
         });
     </script>
   </body>

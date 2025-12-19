@@ -790,3 +790,96 @@ function removeToast(toast) {
 document.addEventListener("DOMContentLoaded", () => {
   loadPackages();
 });
+
+function displayBookings(bookings) {
+  const bookingsTable = document.getElementById("bookings-table");
+  bookingsTable.innerHTML = "";
+
+  if (bookings.length === 0) {
+    bookingsTable.innerHTML =
+      '<tr><td colspan="8">No bookings found.</td></tr>';
+    return;
+  }
+
+  bookings.forEach((booking) => {
+    const row = document.createElement("tr");
+
+    // Format phone number for WhatsApp
+    const formatPhoneForWhatsApp = (phone) => {
+      const cleanNumber = phone.replace(/[\s\-\(\)]/g, "");
+      let formattedNumber = cleanNumber;
+
+      if (!formattedNumber.startsWith("+")) {
+        if (formattedNumber.startsWith("0")) {
+          formattedNumber = "254" + formattedNumber.substring(1);
+        } else if (!formattedNumber.startsWith("254")) {
+          formattedNumber = "254" + formattedNumber;
+        }
+      } else {
+        formattedNumber = formattedNumber.substring(1);
+      }
+
+      return formattedNumber;
+    };
+
+    // Generate WhatsApp message link
+    const generateWhatsAppLink = (booking) => {
+      const formattedNumber = formatPhoneForWhatsApp(booking.phone);
+      const date = new Date(booking.date).toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      const message = `✅ Hi ${booking.name}, this is Jr Photography confirming your ${booking.session_type} session on ${date} at ${booking.time}. We look forward to capturing your special moments! 📸`;
+
+      const encodedMessage = encodeURIComponent(message);
+      return `https://wa.me/${formattedNumber}?text=${encodedMessage}`;
+    };
+
+    const whatsappLink = generateWhatsAppLink(booking);
+
+    row.innerHTML = `
+      <td>${new Date(booking.date).toLocaleDateString()}</td>
+      <td>${booking.time}</td>
+      <td>${booking.name}</td>
+      <td>${booking.email}</td>
+      <td>
+        ${booking.phone}
+        <br>
+        <a 
+          href="${whatsappLink}" 
+          target="_blank"
+          style="
+            display: inline-block;
+            margin-top: 5px;
+            background-color: #25D366;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+          "
+          onmouseover="this.style.backgroundColor='#128C7E'"
+          onmouseout="this.style.backgroundColor='#25D366'"
+        >
+          💬 Send WhatsApp
+        </a>
+      </td>
+      <td>${booking.session_type}</td>
+      <td>${booking.notes || "N/A"}</td>
+      <td>
+        <button 
+          class="btn-danger" 
+          onclick="deleteBooking('${booking._id}')"
+        >
+          Delete
+        </button>
+      </td>
+    `;
+
+    bookingsTable.appendChild(row);
+  });
+}

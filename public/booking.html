@@ -90,6 +90,7 @@
       <section id="booking-system">
         <h1 style="text-align: center">Book Your Photography Session</h1>
 
+        <!-- Update the booking confirmation div in your HTML -->
         <div
           id="booking-confirmation"
           style="
@@ -99,22 +100,61 @@
             background-color: #e6ffe6;
             border: 1px solid #00cc00;
             border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
           "
         >
-          <h2>✅ Booking Confirmed!</h2>
-          <p>
-            Thank you for booking with us. A confirmation email has been sent to
-            **<span id="conf-email"></span>**.
-          </p>
-          <p>Your session details:</p>
-          <p>
-            <strong>Package:</strong> <span id="conf-package"></span> |
-            <strong>Date:</strong> <span id="conf-date"></span> |
-            <strong>Time:</strong> <span id="conf-time"></span>
-          </p>
-          <a href="index.html" class="btn" style="margin-top: 20px"
-            >Return Home</a
+          <h2 style="color: #00cc00">✅ Booking Confirmed!</h2>
+          <p>Thank you for booking with us.</p>
+
+          <!-- Confirmation status messages will be inserted here -->
+          <div id="confirmation-message"></div>
+
+          <div
+            style="
+              background-color: white;
+              padding: 20px;
+              margin: 20px 0;
+              border-radius: 8px;
+            "
           >
+            <h3 style="margin-top: 0">Your Session Details:</h3>
+            <p><strong>📦 Package:</strong> <span id="conf-package"></span></p>
+            <p><strong>📅 Date:</strong> <span id="conf-date"></span></p>
+            <p><strong>⏰ Time:</strong> <span id="conf-time"></span></p>
+            <p><strong>✉️ Email:</strong> <span id="conf-email"></span></p>
+            <p><strong>📱 Phone:</strong> <span id="conf-phone"></span></p>
+          </div>
+
+          <!-- WhatsApp Confirmation Button (hidden on customer view) -->
+          <a
+            id="whatsapp-confirm-btn"
+            href="#"
+            target="_blank"
+            style="display: none"
+          >
+          </a>
+
+          <p style="font-size: 14px; color: #666; margin-top: 20px">
+            Please check your email for detailed confirmation. We'll also send
+            you a WhatsApp message shortly to confirm your booking.
+          </p>
+
+          <a
+            href="index.html"
+            class="btn"
+            style="
+              margin-top: 20px;
+              display: inline-block;
+              background-color: #4caf50;
+              color: white;
+              padding: 12px 25px;
+              text-decoration: none;
+              border-radius: 5px;
+            "
+          >
+            Return Home
+          </a>
         </div>
 
         <form id="booking-form" class="form-container">
