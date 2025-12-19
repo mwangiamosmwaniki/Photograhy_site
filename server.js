@@ -98,11 +98,17 @@ const nodemailer = require("nodemailer");
 
 // Email Configuration
 const transporter = nodemailer.createTransport({
-  service: "gmail", // or your email service
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    pass: process.env.EMAIL_PASS, // Gmail App Password
   },
+  tls: {
+    rejectUnauthorized: false,
+  },
+  connectionTimeout: 10000,
 });
 
 /**
