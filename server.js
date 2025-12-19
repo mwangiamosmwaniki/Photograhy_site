@@ -210,7 +210,9 @@ async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
 
   // Verify transporter configuration first
   try {
-    await transporter.verify();
+    if (process.env.NODE_ENV !== "production") {
+      await transporter.verify();
+    }
     console.log("✅ Email transporter verified successfully");
   } catch (verifyError) {
     console.error("❌ Email transporter verification failed:", verifyError);
@@ -383,11 +385,9 @@ app.post("/api/book", async (req, res) => {
     // Send email confirmation - WITH PROPER ERROR HANDLING
     let emailSent = false;
     try {
-      emailSent = await sendEmailConfirmation(
-        email,
-        bookingDetails,
-        whatsappLink
-      );
+      sendEmailConfirmation(email, bookingDetails, whatsappLink)
+        .then(() => console.log("✅ Email sent"))
+        .catch((err) => console.error("❌ Email error:", err.message));
 
       if (emailSent) {
         console.log("✅ Email sent successfully to:", email);
