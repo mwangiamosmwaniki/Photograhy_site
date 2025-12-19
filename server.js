@@ -397,7 +397,6 @@ app.post("/api/book", async (req, res) => {
       msg: "Booking confirmed successfully!",
       booking_id: booking._id,
       whatsappLink: whatsappLink,
-      emailSent: emailSent,
       debug: {
         email_attempted: true,
         whatsapp_link_generated: true,
