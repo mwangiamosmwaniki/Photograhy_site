@@ -118,6 +118,7 @@ header:hover {
 .logo img {
   height: 48px; /* Desktop size */
   width: auto;
+  border-radius: 8px;
   object-fit: contain;
   transition: transform 0.3s ease;
 }
