@@ -383,12 +383,10 @@ app.post("/api/book", async (req, res) => {
     console.log("📱 WhatsApp link generated:", whatsappLink);
 
     // Send email confirmation - WITH PROPER ERROR HANDLING
-    let emailSent = false;
     try {
       sendEmailConfirmation(email, bookingDetails, whatsappLink)
         .then(() => console.log("✅ Email sent"))
         .catch((err) => console.error("❌ Email error:", err.message));
-      emailSent = true;
       if (emailSent) {
         console.log("✅ Email sent successfully to:", email);
       } else {
