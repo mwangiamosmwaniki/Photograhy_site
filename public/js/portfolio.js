@@ -1,4 +1,4 @@
-// Portfolio Page Script - Updated for separate hosting with proper initialization
+// Portfolio Page Script - Complete working version
 
 // --- API Configuration ---
 const PORTFOLIO_CONFIG = {
@@ -18,25 +18,32 @@ const API_BASE_URL = isDevelopment
   ? PORTFOLIO_CONFIG.development.apiUrl
   : PORTFOLIO_CONFIG.production.apiUrl;
 
-console.log("🖼️ Portfolio API URL:", API_BASE_URL);
-console.log("🌍 Current hostname:", window.location.hostname);
+console.log("🖼️ Portfolio Page Loaded");
+console.log("🖼️ API URL:", API_BASE_URL);
+console.log("🌍 Hostname:", window.location.hostname);
 console.log("🔧 Development mode:", isDevelopment);
 
 // Store filter state
 let currentFilter = "all";
+let portfolioItems = [];
 
 // Load and display portfolio items
 async function loadPortfolioGallery() {
   const gallery = document.getElementById("gallery");
 
   if (!gallery) {
-    console.error("❌ Gallery element not found");
+    console.error("❌ Gallery element #gallery not found!");
     return;
   }
 
+  console.log("✅ Gallery element found");
+
   // Show loading state
-  gallery.innerHTML =
-    '<p style="text-align: center; padding: 2rem; font-size: 1.2rem;">Loading portfolio...</p>';
+  gallery.innerHTML = `
+    <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+      <p style="font-size: 1.2rem; color: #666;">Loading portfolio...</p>
+    </div>
+  `;
 
   const portfolioEndpoint = `${API_BASE_URL}/api/portfolio`;
   console.log("📡 Fetching from:", portfolioEndpoint);
@@ -46,23 +53,30 @@ async function loadPortfolioGallery() {
 
     console.log("📊 Response status:", response.status);
     console.log("📊 Response ok:", response.ok);
+    console.log("📊 Response URL:", response.url);
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const items = await response.json();
-    console.log("📦 Portfolio items received:", items.length);
+    portfolioItems = items;
+
+    console.log("📦 Items received:", items.length);
 
     if (items.length > 0) {
-      console.log("📦 Sample item:", items[0]);
+      console.log("📦 First item:", JSON.stringify(items[0], null, 2));
     }
 
     if (!items.length) {
       gallery.innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: #666;">
-          <p style="font-size: 1.2rem; margin-bottom: 1rem;">No portfolio items found.</p>
-          <p style="font-size: 0.9rem;">Upload some images from the admin panel to get started!</p>
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+          <p style="font-size: 1.2rem; margin-bottom: 1rem; color: #666;">
+            📸 No portfolio items found
+          </p>
+          <p style="font-size: 0.9rem; color: #999;">
+            Upload some images from the admin panel to get started!
+          </p>
         </div>
       `;
       return;
@@ -73,40 +87,39 @@ async function loadPortfolioGallery() {
 
     // Render portfolio items
     items.forEach((item, index) => {
-      console.log(`🖼️ Processing item ${index + 1}:`, {
-        title: item.title,
-        category: item.category,
-        imageUrl: item.imageUrl,
-      });
-
       const galleryItem = document.createElement("div");
       galleryItem.className = "gallery-item";
       galleryItem.setAttribute("data-category", item.category);
 
-      // Handle image URL - prepend API_BASE_URL if needed
+      // Construct image URL
       let imageUrl;
-      if (item.imageUrl.startsWith("http")) {
+      if (
+        item.imageUrl.startsWith("http://") ||
+        item.imageUrl.startsWith("https://")
+      ) {
         imageUrl = item.imageUrl;
-        console.log(`  ✓ Using absolute URL: ${imageUrl}`);
       } else {
-        // Remove leading slash if present to avoid double slashes
+        // Ensure clean path
         const cleanPath = item.imageUrl.startsWith("/")
           ? item.imageUrl
           : `/${item.imageUrl}`;
         imageUrl = `${API_BASE_URL}${cleanPath}`;
-        console.log(`  ✓ Constructed URL: ${imageUrl}`);
       }
+
+      console.log(`🖼️  Item ${index + 1}: ${item.title}`);
+      console.log(`   Category: ${item.category}`);
+      console.log(`   Image URL: ${imageUrl}`);
+
+      // Create fallback image SVG
+      const fallbackSVG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial' font-size='14' fill='%23999'%3EImage not available%3C/text%3E%3C/svg%3E`;
 
       galleryItem.innerHTML = `
         <img
           src="${imageUrl}"
           alt="${item.altText || item.title}"
           loading="lazy"
-          onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2216%22 fill=%22%23999%22%3EImage not found%3C/text%3E%3C/svg%3E'; console.error('❌ Failed to load:', '${imageUrl}');"
-          onload="console.log('✅ Image loaded:', '${imageUrl.substring(
-            0,
-            50
-          )}...');"
+          onerror="this.onerror=null; this.src='${fallbackSVG}'; console.error('❌ Image load failed:', '${imageUrl}');"
+          onload="console.log('✅ Loaded:', '${item.title}');"
         />
         <div class="gallery-item-overlay">
           <p>${item.title}</p>
@@ -116,31 +129,39 @@ async function loadPortfolioGallery() {
       gallery.appendChild(galleryItem);
     });
 
-    console.log("✅ Portfolio rendering complete!");
+    console.log("✅ All items rendered!");
 
     // Initialize filters after items are loaded
     initializeFilters();
   } catch (err) {
-    console.error("❌ Error loading portfolio:", err);
-    console.error("❌ Error details:", {
-      message: err.message,
-      stack: err.stack,
-    });
+    console.error("❌ Error loading portfolio:");
+    console.error("   Message:", err.message);
+    console.error("   Stack:", err.stack);
 
     gallery.innerHTML = `
-      <div style="text-align: center; padding: 2rem;">
+      <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
         <p style="color: #e74c3c; margin-bottom: 1rem; font-size: 1.2rem;">
           ⚠️ Failed to load portfolio
         </p>
         <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">
-          Error: ${err.message}
+          ${err.message}
         </p>
-        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+        <p style="color: #999; font-size: 0.85rem; margin-bottom: 1.5rem;">
           Endpoint: ${portfolioEndpoint}
         </p>
         <button 
-          onclick="location.reload()" 
-          style="padding: 0.75rem 1.5rem; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: 600;"
+          onclick="window.location.reload()" 
+          style="
+            padding: 0.75rem 1.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background 0.3s;
+          "
           onmouseover="this.style.background='#2980b9'"
           onmouseout="this.style.background='#3498db'"
         >
@@ -157,23 +178,22 @@ function initializeFilters() {
   const galleryItems = document.querySelectorAll(".gallery-item");
 
   console.log("🎯 Initializing filters...");
-  console.log("🎯 Filter buttons found:", filterBtns.length);
-  console.log("🎯 Gallery items found:", galleryItems.length);
+  console.log("   Filter buttons:", filterBtns.length);
+  console.log("   Gallery items:", galleryItems.length);
 
   if (!filterBtns.length) {
-    console.warn("⚠️ No filter buttons found");
+    console.warn("⚠️  No filter buttons found");
     return;
   }
 
   if (!galleryItems.length) {
-    console.warn("⚠️ No gallery items found to filter");
+    console.warn("⚠️  No gallery items to filter");
     return;
   }
 
   const filterGallery = (category) => {
-    console.log(`🔍 Filtering by category: ${category}`);
+    console.log(`🔍 Filtering by: ${category}`);
     let visibleCount = 0;
-    let hiddenCount = 0;
 
     galleryItems.forEach((item) => {
       const itemCategory = item.getAttribute("data-category");
@@ -184,35 +204,20 @@ function initializeFilters() {
         visibleCount++;
       } else {
         item.style.display = "none";
-        hiddenCount++;
       }
     });
 
-    console.log(`✓ Showing ${visibleCount} items, hiding ${hiddenCount} items`);
-
-    // Update the filter counts in the UI (optional)
-    updateFilterCounts(category, visibleCount);
-  };
-
-  const updateFilterCounts = (activeCategory, count) => {
-    // Optional: Show count in the active filter button
-    filterBtns.forEach((btn) => {
-      const btnCategory = btn.getAttribute("data-filter");
-      if (btnCategory === activeCategory) {
-        const originalText = btn.textContent.split(" (")[0];
-        btn.textContent = `${originalText} (${count})`;
-      }
-    });
+    console.log(`   ✓ Showing ${visibleCount} item(s)`);
   };
 
   // Add click handlers to filter buttons
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", (e) => {
-      // Update active button state
+      // Update active button
       filterBtns.forEach((b) => b.classList.remove("active"));
       e.target.classList.add("active");
 
-      // Get category and filter
+      // Filter gallery
       const category = e.target.getAttribute("data-filter");
       currentFilter = category;
       filterGallery(category);
@@ -221,13 +226,19 @@ function initializeFilters() {
 
   // Show all items by default
   filterGallery(currentFilter);
-  console.log("✅ Filters initialized!");
+  console.log("✅ Filters ready!");
 }
 
 // Initialize when DOM is ready
+console.log("📄 Document ready state:", document.readyState);
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", loadPortfolioGallery);
+  console.log("⏳ Waiting for DOMContentLoaded...");
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("✅ DOMContentLoaded fired");
+    loadPortfolioGallery();
+  });
 } else {
-  // DOM already loaded
+  console.log("✅ DOM already loaded, loading immediately");
   loadPortfolioGallery();
 }
