@@ -77,6 +77,121 @@
 
     <!-- Tailwind -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+      /* Portfolio Info Section Styles */
+      .portfolio-intro {
+        max-width: 900px;
+        margin: 0 auto 4rem;
+        text-align: center;
+        padding: 0 1rem;
+      }
+
+      .portfolio-intro p {
+        font-size: clamp(1rem, 2vw, 1.15rem);
+        line-height: 1.8;
+        color: var(--secondary-color);
+        margin-bottom: 1.5rem;
+      }
+
+      .portfolio-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.05),
+          rgba(236, 72, 153, 0.05)
+        );
+        border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .stat-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15);
+      }
+
+      .stat-number {
+        font-size: clamp(2.5rem, 5vw, 3.5rem);
+        font-weight: 700;
+        background: linear-gradient(
+          135deg,
+          var(--accent-color),
+          var(--warm-accent)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-family: var(--font-heading);
+        line-height: 1.2;
+      }
+
+      .stat-label {
+        font-size: clamp(0.9rem, 1.5vw, 1rem);
+        color: var(--primary-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 0.5rem;
+      }
+
+      .category-descriptions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        max-width: 1200px;
+        margin: 3rem auto 4rem;
+        padding: 0 1rem;
+      }
+
+      .category-card {
+        background: var(--white);
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
+        transition: all 0.3s ease;
+        border-top: 3px solid transparent;
+      }
+
+      .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 40px rgba(245, 158, 11, 0.15);
+        border-top-color: var(--accent-color);
+      }
+
+      .category-card h3 {
+        color: var(--accent-color);
+        font-size: clamp(1.2rem, 2vw, 1.4rem);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .category-icon {
+        font-size: 1.5rem;
+      }
+
+      .category-card p {
+        color: var(--secondary-color);
+        line-height: 1.7;
+        font-size: clamp(0.9rem, 1.5vw, 1rem);
+      }
+
+      .highlight-text {
+        color: var(--accent-color);
+        font-weight: 600;
+      }
+    </style>
   </head>
 
   <body id="portfolio-page">
@@ -114,6 +229,87 @@
       <section id="portfolio-gallery">
         <h1 class="text-center">Our Featured Work</h1>
 
+        <!-- Portfolio Introduction -->
+        <div class="portfolio-intro">
+          <p>
+            Every moment tells a story. Through our lens, we capture the raw
+            emotion, genuine connections, and unforgettable moments that define
+            your most precious occasions. From intimate ceremonies to grand
+            celebrations, our portfolio showcases the artistry and passion we
+            bring to every project.
+          </p>
+          <p>
+            Based in <span class="highlight-text">Nyeri, Kenya</span>, we've had
+            the privilege of documenting hundreds of beautiful moments across
+            weddings, portraits, corporate events, and commercial projects. Each
+            photograph is crafted with attention to detail, creative vision, and
+            a commitment to excellence.
+          </p>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="portfolio-stats">
+          <div class="stat-item">
+            <div class="stat-number">500+</div>
+            <div class="stat-label">Projects Completed</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">250+</div>
+            <div class="stat-label">Happy Couples</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Photos Delivered</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">5+</div>
+            <div class="stat-label">Years Experience</div>
+          </div>
+        </div>
+
+        <!-- Category Descriptions -->
+        <div class="category-descriptions">
+          <div class="category-card">
+            <h3><span class="category-icon">💍</span> Weddings</h3>
+            <p>
+              Your wedding day is one of life's most significant moments. We
+              specialize in capturing the joy, tears, laughter, and love that
+              make your celebration uniquely yours. From getting ready to the
+              final dance, every emotion is preserved forever.
+            </p>
+          </div>
+
+          <div class="category-card">
+            <h3><span class="category-icon">📸</span> Portraits</h3>
+            <p>
+              Professional headshots, family portraits, and personal branding
+              photography that captures your authentic self. We create timeless
+              images that reflect your personality and tell your unique story
+              with style and sophistication.
+            </p>
+          </div>
+
+          <div class="category-card">
+            <h3><span class="category-icon">🎉</span> Events</h3>
+            <p>
+              From corporate galas to intimate gatherings, we document the
+              energy, connections, and memorable moments that make your event
+              special. Full coverage that captures every detail and emotion with
+              professional precision.
+            </p>
+          </div>
+
+          <div class="category-card">
+            <h3><span class="category-icon">🏢</span> Commercial</h3>
+            <p>
+              High-quality product photography, brand campaigns, and commercial
+              shoots that elevate your business. We understand the importance of
+              visual storytelling in building your brand and connecting with
+              your audience.
+            </p>
+          </div>
+        </div>
+
         <!-- Filters -->
         <div class="filter-btns">
           <button class="filter-btn active" data-filter="all">All Work</button>
@@ -136,7 +332,9 @@
         reserved.
       </p>
     </footer>
-    <!-- Portfolio dynamic loader -->
+
+    <!-- Scripts -->
+    <script src="js/script.js"></script>
     <script src="js/portfolio.js"></script>
   </body>
 </html>
