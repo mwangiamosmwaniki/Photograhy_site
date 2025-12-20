@@ -285,6 +285,32 @@ function initializeNavigation() {
   document.head.appendChild(style);
 }
 
+// Close menu when clicking outside
+document.addEventListener("click", (e) => {
+  const header = document.querySelector("header");
+  const navMenu = document.querySelector(".nav-links");
+  const isClickInsideNav = header.contains(e.target);
+  const isMenuOpen = navMenu.classList.contains("open");
+
+  if (!isClickInsideNav && isMenuOpen) {
+    document.querySelector(".nav-toggle").classList.remove("open");
+    navMenu.classList.remove("open");
+    console.log("🖱️ Clicked outside, menu closed");
+  }
+});
+
+// Close menu when pressing Escape key
+document.addEventListener("keydown", (e) => {
+  const navToggle = document.querySelector(".nav-toggle");
+  const navMenu = document.querySelector(".nav-links");
+
+  if (e.key === "Escape" && navMenu.classList.contains("open")) {
+    navToggle.classList.remove("open");
+    navMenu.classList.remove("open");
+    console.log("⌨️ Escape pressed, menu closed");
+  }
+});
+
 // Set current year in footer
 function setCurrentYear() {
   const currentYearSpan = document.getElementById("currentYear");
