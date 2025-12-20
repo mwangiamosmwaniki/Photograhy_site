@@ -383,19 +383,6 @@ section {
   }
 }
 
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 17, 42, 0.55) 0%,
-    rgba(30, 41, 59, 0.45) 50%,
-    rgba(236, 72, 153, 0.06) 100%
-  );
-  pointer-events: none;
-}
-
 .hero-content {
   position: relative;
   z-index: 4;
