@@ -122,7 +122,7 @@
         </p>
 
         <div id="loading" style="text-align: center; padding: 40px">
-          <p>Loading packages...</p>
+          <p style="font-size: 1.2rem; color: #666">Loading packages...</p>
         </div>
 
         <div class="pricing-grid" id="pricingGrid" style="display: none">
@@ -138,53 +138,138 @@
             color: #e74c3c;
           "
         >
-          <p>Unable to load pricing packages. Please try again later.</p>
+          <p style="font-size: 1.2rem; margin-bottom: 1rem">
+            Unable to load pricing packages.
+          </p>
+          <p
+            id="errorMessage"
+            style="font-size: 0.9rem; color: #666; margin-bottom: 1rem"
+          ></p>
+          <button
+            onclick="location.reload()"
+            style="
+              padding: 0.75rem 1.5rem;
+              background: #3498db;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 1rem;
+              font-weight: 600;
+            "
+            onmouseover="this.style.background='#2980b9'"
+            onmouseout="this.style.background='#3498db'"
+          >
+            🔄 Retry
+          </button>
         </div>
 
         <p style="text-align: center; margin-top: 50px">
           *For custom wedding or commercial quotes, please use the
-          <a href="contact.html">contact form</a>.
+          <a
+            href="contact.html"
+            style="color: var(--accent-color); text-decoration: underline"
+            >contact form</a
+          >.
         </p>
       </section>
     </main>
 
     <footer>
-      <p>&copy; 2025 Jr Photography. All rights reserved.</p>
+      <p>
+        &copy; <span id="currentYear">2025</span> Jr Photography. All rights
+        reserved.
+      </p>
     </footer>
 
     <script>
+      // --- API Configuration ---
+      const SERVICES_CONFIG = {
+        development: {
+          apiUrl: "http://localhost:3000",
+        },
+        production: {
+          apiUrl: "https://photography-site-8pct.onrender.com",
+        },
+      };
+
+      const isDevelopment =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      const API_BASE_URL = isDevelopment
+        ? SERVICES_CONFIG.development.apiUrl
+        : SERVICES_CONFIG.production.apiUrl;
+
+      console.log("💼 Services API URL:", API_BASE_URL);
+      console.log("🌍 Current hostname:", window.location.hostname);
+      console.log("🔧 Development mode:", isDevelopment);
+
       // Fetch pricing packages from MongoDB via Node backend
       async function loadPricingPackages() {
         const loadingEl = document.getElementById("loading");
         const gridEl = document.getElementById("pricingGrid");
         const errorEl = document.getElementById("error");
+        const errorMessageEl = document.getElementById("errorMessage");
+
+        const packagesEndpoint = `${API_BASE_URL}/api/packages`;
+        console.log("📡 Fetching packages from:", packagesEndpoint);
 
         try {
           // Fetch packages from your backend API
-          const response = await fetch("/api/packages");
+          const response = await fetch(packagesEndpoint);
+
+          console.log("📊 Response status:", response.status);
+          console.log("📊 Response ok:", response.ok);
 
           if (!response.ok) {
-            throw new Error("Failed to fetch packages");
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           const packages = await response.json();
+          console.log("📦 Packages received:", packages.length);
+
+          if (packages.length > 0) {
+            console.log("📦 Sample package:", packages[0]);
+          }
 
           // Hide loading, show grid
           loadingEl.style.display = "none";
+
+          if (packages.length === 0) {
+            gridEl.innerHTML = `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #666;">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">No packages available yet.</p>
+                <p style="font-size: 0.9rem;">Please check back soon or contact us for custom pricing!</p>
+              </div>
+            `;
+            gridEl.style.display = "grid";
+            return;
+          }
+
           gridEl.style.display = "grid";
 
           // Clear any existing content
           gridEl.innerHTML = "";
 
           // Render each package
-          packages.forEach((pkg) => {
+          packages.forEach((pkg, index) => {
+            console.log(`💳 Creating card ${index + 1}:`, pkg.name);
             const card = createPricingCard(pkg);
             gridEl.appendChild(card);
           });
+
+          console.log("✅ Packages loaded successfully!");
         } catch (error) {
-          console.error("Error loading packages:", error);
+          console.error("❌ Error loading packages:", error);
+          console.error("❌ Error details:", {
+            message: error.message,
+            stack: error.stack,
+          });
+
           loadingEl.style.display = "none";
           errorEl.style.display = "block";
+          errorMessageEl.textContent = `Error: ${error.message} | Endpoint: ${packagesEndpoint}`;
         }
       }
 
@@ -200,7 +285,7 @@
         const featuresList = pkg.features
           .map((feature) => {
             const strikethrough = feature.strikethrough
-              ? ' style="text-decoration: line-through"'
+              ? ' style="text-decoration: line-through; opacity: 0.6;"'
               : "";
             return `<li${strikethrough}>${feature.text}</li>`;
           })
@@ -222,7 +307,15 @@
       }
 
       // Load packages when page loads
-      document.addEventListener("DOMContentLoaded", loadPricingPackages);
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPricingPackages();
+
+        // Set current year in footer
+        const currentYearSpan = document.getElementById("currentYear");
+        if (currentYearSpan) {
+          currentYearSpan.textContent = new Date().getFullYear();
+        }
+      });
     </script>
     <script src="js/script.js"></script>
   </body>

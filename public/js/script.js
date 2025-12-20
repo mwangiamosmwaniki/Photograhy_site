@@ -40,34 +40,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const activeLinkRule = `.nav-links a.active-nav-link::after { width: 100% !important; left: 0 !important; background: var(--accent-color) !important; }`;
   styleSheet.insertRule(activeLinkRule, styleSheet.cssRules.length);
 
-  // --- Portfolio Filtering Logic ---
+  // --- Portfolio Filtering Logic (ONLY for non-portfolio pages with static content) ---
   const portfolioPage = document.getElementById("portfolio-page");
-  if (portfolioPage) {
+
+  // IMPORTANT: Skip filter initialization on portfolio page - let portfolio.js handle it
+  if (!portfolioPage) {
+    // This is for OTHER pages that might have static portfolio previews
     const filterBtns = document.querySelectorAll(".filter-btn");
     const galleryItems = document.querySelectorAll(".gallery-item");
 
-    const filterGallery = (category) => {
-      galleryItems.forEach((item) => {
-        const itemCategory = item.getAttribute("data-category");
-        if (category === "all" || itemCategory === category) {
-          item.style.display = "block";
-          item.style.animation = "fadeIn 0.5s ease-out";
-        } else {
-          item.style.display = "none";
-        }
-      });
-    };
+    if (filterBtns.length && galleryItems.length) {
+      const filterGallery = (category) => {
+        galleryItems.forEach((item) => {
+          const itemCategory = item.getAttribute("data-category");
+          if (category === "all" || itemCategory === category) {
+            item.style.display = "block";
+            item.style.animation = "fadeIn 0.5s ease-out";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      };
 
-    filterBtns.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        filterBtns.forEach((b) => b.classList.remove("active"));
-        e.target.classList.add("active");
-        const category = e.target.getAttribute("data-filter");
-        filterGallery(category);
+      filterBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          filterBtns.forEach((b) => b.classList.remove("active"));
+          e.target.classList.add("active");
+          const category = e.target.getAttribute("data-filter");
+          filterGallery(category);
+        });
       });
-    });
 
-    filterGallery("all");
+      filterGallery("all");
+    }
+  } else {
+    console.log(
+      "📸 Portfolio page detected - skipping script.js filter initialization"
+    );
   }
 
   // --- Hero Background Slider ---
@@ -168,7 +177,9 @@ async function loadFeaturedGallery() {
         : `${API_BASE_URL}${item.imageUrl}`;
 
       div.innerHTML = `
-        <img src="${imageUrl}" alt="${item.altText || "Portfolio image"}" />
+        <img src="${imageUrl}" alt="${
+        item.altText || "Portfolio image"
+      }" loading="lazy" />
         <div class="gallery-item-overlay">
           <p>${
             item.category.charAt(0).toUpperCase() + item.category.slice(1)
