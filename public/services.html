@@ -10,75 +10,9 @@
       name="description"
       content="Explore professional photography services and pricing from Jr Photography. Wedding, portrait, event, and commercial packages tailored to your needs."
     />
-    <meta
-      name="keywords"
-      content="photography services, wedding photography pricing, portrait photography packages, event photography Kenya"
-    />
-    <meta name="author" content="Jr Photography" />
-
-    <!-- Open Graph -->
-    <meta
-      property="og:title"
-      content="Photography Services & Pricing | Jr Photography"
-    />
-    <meta
-      property="og:description"
-      content="Transparent photography packages for weddings, portraits, events, and commercial shoots."
-    />
-    <meta
-      property="og:image"
-      content="https://photography-site-8pct.onrender.com/images/hero.jpg"
-    />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content="https://photography-site-8pct.onrender.com/services.html"
-    />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Photography Services & Pricing | Jr Photography"
-    />
-    <meta
-      name="twitter:description"
-      content="Browse photography packages and pricing for weddings, portraits, and events."
-    />
-    <meta
-      name="twitter:image"
-      content="https://photography-site-8pct.onrender.com/images/hero.jpg"
-    />
-
-    <link
-      rel="canonical"
-      href="https://photography-site-8pct.onrender.com/services.html"
-    />
 
     <link rel="stylesheet" href="css/styles.css" />
-    <link rel="icon" type="image/weicon.webp" href="/images/icon.webp" />
-
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Service",
-        "provider": {
-          "@type": "ProfessionalService",
-          "name": "Jr Photography",
-          "url": "https://photography-site-8pct.onrender.com"
-        },
-        "areaServed": {
-          "@type": "Country",
-          "name": "Kenya"
-        },
-        "serviceType": "Photography Services",
-        "offers": {
-          "@type": "Offer",
-          "priceCurrency": "KES"
-        }
-      }
-    </script>
-
+    <link rel="icon" type="image/webp" href="/images/icon.webp" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   </head>
 
@@ -120,6 +54,36 @@
           fit for your needs. All packages include high-resolution digital
           files.
         </p>
+
+        <!-- Loading Indicator -->
+        <div
+          id="loading"
+          style="display: block; text-align: center; padding: 40px; color: #666"
+        >
+          <div
+            style="
+              display: inline-block;
+              position: relative;
+              width: 80px;
+              height: 80px;
+            "
+          >
+            <div
+              style="
+                position: absolute;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3498db;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                animation: spin 1s linear infinite;
+                top: 10px;
+                left: 10px;
+              "
+            ></div>
+          </div>
+          <p style="margin-top: 20px; font-size: 1.1rem">Loading packages...</p>
+        </div>
 
         <div class="pricing-grid" id="pricingGrid" style="display: none">
           <!-- Pricing cards will be inserted here dynamically -->
@@ -177,6 +141,17 @@
         reserved.
       </p>
     </footer>
+
+    <style>
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
 
     <script>
       // --- API Configuration ---
@@ -313,5 +288,6 @@
         }
       });
     </script>
+    <script src="js/script.js"></script>
   </body>
 </html>
