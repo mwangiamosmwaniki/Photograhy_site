@@ -278,6 +278,24 @@
         padding: 2rem;
         color: #95a5a6;
       }
+      .loading-spinner {
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
       .empty-state {
         text-align: center;
         padding: 3rem;
@@ -311,6 +329,13 @@
         font-weight: 500;
         background: #3498db;
         color: white;
+      }
+      .error-message {
+        background: #fee;
+        color: #c33;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1rem;
       }
 
       /* Portfolio Grid Styles */
@@ -366,115 +391,92 @@
         margin-top: 0.5rem;
       }
 
-      /* RESPONSIVE STYLES */
-      @media (max-width: 1024px) {
-        .container {
-          padding: 1.5rem;
+      /* Toast Container */
+      #toastContainer {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .toast {
+        background: white;
+        padding: 1rem;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        min-width: 300px;
+        animation: slideIn 0.3s ease-out;
+      }
+      .toast.removing {
+        animation: slideOut 0.3s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
         }
-        .header {
-          padding: 1rem 1.5rem;
-        }
-        .section-header h2 {
-          font-size: 1.6rem;
-        }
-        th,
-        td {
-          padding: 0.75rem;
+        to {
+          transform: translateX(0);
+          opacity: 1;
         }
       }
-
-      @media (max-width: 768px) {
-        .header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
         }
-        .header h1 {
-          font-size: 1.3rem;
-        }
-        .header-actions {
-          width: 100%;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 0.75rem;
-        }
-        .tabs {
-          overflow-x: auto;
-          white-space: nowrap;
-          gap: 0.5rem;
-        }
-        .tab {
-          padding: 0.75rem 1.25rem;
-          font-size: 0.9rem;
-        }
-        .section-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
-        }
-        .btn {
-          width: 100%;
-          text-align: center;
-        }
-        table {
-          font-size: 0.9rem;
-        }
-        th,
-        td {
-          padding: 0.75rem 0.5rem;
-        }
-        .actions {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .icon-btn {
-          width: 100%;
-        }
-        .modal.active {
-          padding: 1rem;
-        }
-        .modal-content {
-          padding: 1.5rem;
-        }
-        .feature-item {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .feature-item button {
-          width: 100%;
-        }
-        .portfolio-grid {
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 1rem;
+        to {
+          transform: translateX(400px);
+          opacity: 0;
         }
       }
-
-      @media (max-width: 480px) {
-        body {
-          font-size: 0.9rem;
-        }
-        .header h1 {
-          font-size: 1.15rem;
-        }
-        .stat-card h3 {
-          font-size: 1.6rem;
-        }
-        .stat-card {
-          padding: 1.25rem;
-        }
-        .badge {
-          font-size: 0.75rem;
-        }
-        .modal-content {
-          max-height: 95vh;
-        }
-        .portfolio-grid {
-          grid-template-columns: 1fr;
-        }
+      .toast-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+      }
+      .toast.success .toast-icon {
+        color: #27ae60;
+      }
+      .toast.error .toast-icon {
+        color: #e74c3c;
+      }
+      .toast.warning .toast-icon {
+        color: #f39c12;
+      }
+      .toast.info .toast-icon {
+        color: #3498db;
+      }
+      .toast-content {
+        flex: 1;
+      }
+      .toast-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .toast-message {
+        font-size: 0.9rem;
+        color: #666;
+      }
+      .toast-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #999;
+        padding: 0;
+        line-height: 1;
       }
     </style>
   </head>
   <body>
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
     <div class="header">
       <h1>Admin Dashboard - Jr Photography</h1>
       <div class="header-actions">
@@ -508,7 +510,15 @@
             + Add Package
           </button>
         </div>
-        <div id="packagesLoading" class="loading">Loading...</div>
+        <div id="packagesLoading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading packages...</p>
+        </div>
+        <div
+          id="packagesError"
+          class="error-message"
+          style="display: none"
+        ></div>
         <div id="packagesContent" style="display: none">
           <div class="table-container">
             <table>
@@ -526,7 +536,7 @@
           </div>
         </div>
         <div id="packagesEmpty" class="empty-state" style="display: none">
-          No packages found
+          No packages found. Click "Add Package" to create your first package.
         </div>
       </div>
 
@@ -543,7 +553,15 @@
             <p>Upcoming</p>
           </div>
         </div>
-        <div id="bookingsLoading" class="loading">Loading...</div>
+        <div id="bookingsLoading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading bookings...</p>
+        </div>
+        <div
+          id="bookingsError"
+          class="error-message"
+          style="display: none"
+        ></div>
         <div id="bookingsContent" style="display: none">
           <div class="table-container">
             <table>
@@ -555,6 +573,7 @@
                   <th>Type</th>
                   <th>Date</th>
                   <th>Time</th>
+                  <th>Notes</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -563,7 +582,7 @@
           </div>
         </div>
         <div id="bookingsEmpty" class="empty-state" style="display: none">
-          No bookings
+          No bookings yet.
         </div>
       </div>
 
@@ -631,7 +650,10 @@
         <!-- Portfolio Grid -->
         <div class="card">
           <h3 style="margin-bottom: 1rem">Uploaded Images</h3>
-          <div id="portfolioLoading" class="loading">Loading portfolio...</div>
+          <div id="portfolioLoading" class="loading">
+            <div class="loading-spinner"></div>
+            <p>Loading portfolio...</p>
+          </div>
           <div id="portfolioGrid" class="portfolio-grid"></div>
           <div id="portfolioEmpty" class="empty-state" style="display: none">
             No portfolio items yet. Upload your first image above!
@@ -647,7 +669,11 @@
             + Add User
           </button>
         </div>
-        <div id="usersLoading" class="loading">Loading...</div>
+        <div id="usersLoading" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading users...</p>
+        </div>
+        <div id="usersError" class="error-message" style="display: none"></div>
         <div id="usersContent" style="display: none">
           <div class="table-container">
             <table>
@@ -664,7 +690,7 @@
           </div>
         </div>
         <div id="usersEmpty" class="empty-state" style="display: none">
-          No users
+          No users found.
         </div>
       </div>
     </div>
