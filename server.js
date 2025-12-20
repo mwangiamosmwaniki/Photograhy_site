@@ -28,19 +28,26 @@ const allowedOrigins = [
   "http://localhost:3001", // Alternative local dev
   "http://localhost:8080", // Another common dev port
   "http://127.0.0.1:5173", // Local IP variant
-  process.env.FRONTEND_URL, // Production frontend URL
+  "https://jr-photography.onrender.com", // ✅ YOUR FRONTEND URL
+  "https://photography-site-8pct.onrender.com", // ✅ BACKEND URL (for testing)
+  process.env.FRONTEND_URL, // From environment variable
   process.env.FRONTEND_URL_2, // Optional second frontend URL
 ].filter(Boolean); // Remove undefined values
 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, curl, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log("✅ Allowing request with no origin");
+      return callback(null, true);
+    }
 
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log("✅ Allowed by CORS:", origin);
       callback(null, true);
     } else {
       console.log("❌ Blocked by CORS:", origin);
+      console.log("📋 Allowed origins:", allowedOrigins);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -731,6 +738,7 @@ app.get("/health", (req, res) => {
     status: "ok",
     message: "Jr Photography API is running",
     timestamp: new Date().toISOString(),
+    allowedOrigins: allowedOrigins,
   });
 });
 
