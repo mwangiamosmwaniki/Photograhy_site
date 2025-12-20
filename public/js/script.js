@@ -144,6 +144,63 @@ function initHeroSlider() {
   });
 }
 
+// --- Load Featured Gallery Items Dynamically ---
+async function loadFeaturedGallery() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/portfolio/featured`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const items = await response.json();
+
+    const gallery = document.querySelector("#preview .gallery");
+    if (!gallery) return;
+
+    gallery.innerHTML = "";
+
+    if (items.length === 0) {
+      gallery.innerHTML =
+        '<p style="text-align: center; color: #666;">No featured items available.</p>';
+      return;
+    }
+
+    items.forEach((item) => {
+      const div = document.createElement("div");
+      div.className = "gallery-item";
+      div.dataset.category = item.category;
+
+      // Use full API URL for images if they're served from backend
+      const imageUrl = item.imageUrl.startsWith("http")
+        ? item.imageUrl
+        : `${API_BASE_URL}${item.imageUrl}`;
+
+      div.innerHTML = `
+        <img src="${imageUrl}" alt="${
+        item.altText || "Portfolio image"
+      }" loading="lazy" />
+        <div class="gallery-item-overlay">
+          <p>${
+            item.category.charAt(0).toUpperCase() + item.category.slice(1)
+          }</p>
+        </div>
+      `;
+
+      gallery.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Error loading featured gallery:", err);
+    const gallery = document.querySelector("#preview .gallery");
+    if (gallery) {
+      gallery.innerHTML =
+        '<p style="text-align: center; color: #666;">Unable to load gallery items.</p>';
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadFeaturedGallery);
+
 // --- Set Current Year in Footer ---
 document.addEventListener("DOMContentLoaded", function () {
   const currentYearSpan = document.getElementById("currentYear");
