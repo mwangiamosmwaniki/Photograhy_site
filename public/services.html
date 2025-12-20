@@ -293,11 +293,14 @@
             navMenu.classList.toggle("open");
           });
 
-          // Close menu when clicking on a link
+          // Close menu when clicking on a link (with small delay to allow navigation)
           navLinks.forEach((link) => {
-            link.addEventListener("click", () => {
-              navToggle.classList.remove("open");
-              navMenu.classList.remove("open");
+            link.addEventListener("click", (e) => {
+              // Allow the link to navigate first
+              setTimeout(() => {
+                navToggle.classList.remove("open");
+                navMenu.classList.remove("open");
+              }, 100);
             });
           });
         }
