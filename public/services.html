@@ -283,27 +283,26 @@
         loadPricingPackages();
 
         // Navigation toggle functionality
-        const navToggle = document.querySelector(".nav-toggle");
-        const navMenu = document.querySelector(".nav-menu");
-        const navLinks = document.querySelectorAll(".nav-links a");
+        // --- Mobile Navigation Toggle ---
+        document.addEventListener("DOMContentLoaded", function () {
+          const navToggle = document.querySelector(".nav-toggle");
+          const navMenu = document.querySelector(".nav-links");
+          const navLinks = document.querySelectorAll(".nav-links a");
 
-        if (navToggle && navMenu) {
-          navToggle.addEventListener("click", () => {
-            navToggle.classList.toggle("open");
-            navMenu.classList.toggle("open");
-          });
+          if (navToggle && navMenu) {
+            navToggle.addEventListener("click", () => {
+              navToggle.classList.toggle("open");
+              navMenu.classList.toggle("open");
+            });
 
-          // Close menu when clicking on a link (with small delay to allow navigation)
-          navLinks.forEach((link) => {
-            link.addEventListener("click", (e) => {
-              // Allow the link to navigate first
-              setTimeout(() => {
+            navLinks.forEach((link) => {
+              link.addEventListener("click", () => {
                 navToggle.classList.remove("open");
                 navMenu.classList.remove("open");
-              }, 100);
+              });
             });
-          });
-        }
+          }
+        });
 
         // Set active navigation link
         const currentPath =
