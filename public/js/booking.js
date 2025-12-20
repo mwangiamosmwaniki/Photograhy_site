@@ -44,24 +44,64 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Load packages from database ---
   async function loadPackages() {
     const selectEl = document.getElementById("session_type");
-    if (!selectEl) return;
+    if (!selectEl) {
+      console.error("❌ session_type select element not found");
+      return;
+    }
+
+    // Set loading state
+    selectEl.innerHTML = '<option value="">⏳ Loading packages...</option>';
+    selectEl.disabled = true;
 
     try {
       console.log("📦 Loading packages from:", `${API_BASE_URL}/api/packages`);
-      const response = await fetch(`${API_BASE_URL}/api/packages`);
+      console.log("🌐 Full URL:", `${API_BASE_URL}/api/packages`);
+
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(`${API_BASE_URL}/api/packages`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+        mode: "cors",
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      console.log("📡 Response status:", response.status);
+      console.log("📡 Response OK:", response.ok);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch packages: ${response.status}`);
+        const errorText = await response.text();
+        console.error("❌ Response error:", errorText);
+        throw new Error(
+          `Failed to fetch packages: ${response.status} - ${errorText}`
+        );
       }
 
       const packages = await response.json();
       console.log("✅ Packages loaded:", packages);
+      console.log("📦 Number of packages:", packages.length);
 
       // Clear loading option
       selectEl.innerHTML = '<option value="">-- Please Select --</option>';
+      selectEl.disabled = false;
+
+      // Validate packages array
+      if (!Array.isArray(packages) || packages.length === 0) {
+        console.warn("⚠️ No packages received from API");
+        selectEl.innerHTML =
+          '<option value="">-- No packages available --</option>';
+        return;
+      }
 
       // Add each package as an option
-      packages.forEach((pkg) => {
+      packages.forEach((pkg, index) => {
+        console.log(`  Package ${index + 1}:`, pkg);
         const option = document.createElement("option");
         option.value = pkg.name;
         option.textContent = `${pkg.name} (Ksh${pkg.price})`;
@@ -73,13 +113,33 @@ document.addEventListener("DOMContentLoaded", () => {
       const preSelectedPackage = urlParams.get("package");
 
       if (preSelectedPackage) {
+        console.log("🔗 Pre-selecting package from URL:", preSelectedPackage);
         selectEl.value = preSelectedPackage;
       }
     } catch (error) {
-      console.error("❌ Error loading packages:", error);
-      selectEl.innerHTML =
-        '<option value="">-- Error loading packages --</option>';
-      alert("Failed to load packages. Please refresh the page.");
+      selectEl.disabled = false;
+
+      if (error.name === "AbortError") {
+        console.error("❌ Request timeout - server took too long to respond");
+        selectEl.innerHTML = '<option value="">-- Request timeout --</option>';
+        alert(
+          "The server is taking too long to respond. Please check if your backend is running and try again."
+        );
+      } else {
+        console.error("❌ Error loading packages:", error);
+        console.error("❌ Error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+        selectEl.innerHTML =
+          '<option value="">-- Error loading packages --</option>';
+
+        // Show more detailed error to user
+        alert(
+          `Failed to load packages: ${error.message}\n\nPlease check:\n1. Is your backend server running?\n2. Is CORS enabled on your backend?\n3. Check the browser console for details.`
+        );
+      }
     }
   }
 
