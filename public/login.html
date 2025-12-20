@@ -185,6 +185,19 @@
         text-decoration: underline;
       }
 
+      /* Debug info (remove in production) */
+      .debug-info {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        max-width: 300px;
+      }
+
       /* Responsive */
       @media (max-width: 480px) {
         .login-container {
@@ -240,9 +253,39 @@
       </div>
     </div>
 
+    <!-- Debug Info (remove in production) -->
+    <div class="debug-info" id="debug-info">
+      API URL: <span id="api-url-display">Loading...</span>
+    </div>
+
     <script>
-      if (localStorage.getItem("adminToken"))
+      // --- API Configuration (Same as admin.js) ---
+      const config = {
+        development: {
+          apiUrl: "http://localhost:3000",
+        },
+        production: {
+          apiUrl: "https://photography-site-8pct.onrender.com",
+        },
+      };
+
+      const isDevelopment =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
+
+      const API_BASE_URL = isDevelopment
+        ? config.development.apiUrl
+        : config.production.apiUrl;
+
+      console.log("🔐 Login Page API URL:", API_BASE_URL);
+
+      // Display API URL for debugging
+      document.getElementById("api-url-display").textContent = API_BASE_URL;
+
+      // Check if already logged in
+      if (localStorage.getItem("adminToken")) {
         window.location.href = "admin.html";
+      }
 
       const loginForm = document.getElementById("login-form");
       const loginBtn = document.getElementById("login-btn");
@@ -252,8 +295,9 @@
         alertDiv.textContent = msg;
         alertDiv.className = `alert ${type}`;
         alertDiv.style.display = "block";
-        if (type === "success")
+        if (type === "success") {
           setTimeout(() => (alertDiv.style.display = "none"), 2000);
+        }
       }
 
       loginForm.addEventListener("submit", async (e) => {
@@ -265,12 +309,24 @@
         loginBtn.textContent = "Logging in...";
 
         try {
-          const res = await fetch("/api/auth/login", {
+          console.log(
+            "🔐 Attempting login to:",
+            `${API_BASE_URL}/api/auth/login`
+          );
+
+          const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({ username, password }),
           });
+
+          console.log("📡 Response status:", res.status);
+
           const data = await res.json();
+          console.log("📦 Response data:", data);
+
           if (res.ok) {
             showAlert("Login successful! Redirecting...", "success");
             localStorage.setItem("adminToken", data.token);
@@ -281,8 +337,11 @@
             loginBtn.textContent = "Login";
           }
         } catch (err) {
-          console.error(err);
-          showAlert("Network error. Please try again.", "error");
+          console.error("❌ Login error:", err);
+          showAlert(
+            "Network error. Please check your connection and try again.",
+            "error"
+          );
           loginBtn.disabled = false;
           loginBtn.textContent = "Login";
         }
