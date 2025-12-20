@@ -232,13 +232,19 @@ function initializeFilters() {
 // Initialize navigation toggle
 function initializeNavigation() {
   const navToggle = document.querySelector(".nav-toggle");
-  const navMenu = document.querySelector(".nav-menu");
+  const navMenu = document.querySelector(".nav-links"); // FIXED: Changed from .nav-menu to .nav-links
   const navLinks = document.querySelectorAll(".nav-links a");
+
+  console.log("🧭 Initializing navigation...");
+  console.log("   Nav toggle:", navToggle ? "found" : "not found");
+  console.log("   Nav menu:", navMenu ? "found" : "not found");
+  console.log("   Nav links:", navLinks.length);
 
   if (navToggle && navMenu) {
     navToggle.addEventListener("click", () => {
       navToggle.classList.toggle("open");
       navMenu.classList.toggle("open");
+      console.log("🍔 Menu toggled:", navMenu.classList.contains("open"));
     });
 
     // Close menu when clicking on a link
@@ -246,8 +252,13 @@ function initializeNavigation() {
       link.addEventListener("click", () => {
         navToggle.classList.remove("open");
         navMenu.classList.remove("open");
+        console.log("🔗 Link clicked, menu closed");
       });
     });
+
+    console.log("✅ Navigation toggle initialized");
+  } else {
+    console.warn("⚠️  Navigation elements not found");
   }
 
   // Set active navigation link
@@ -258,6 +269,7 @@ function initializeNavigation() {
       link.style.color = "var(--accent-color)";
       link.style.fontWeight = "700";
       link.classList.add("active-nav-link");
+      console.log(`✓ Active link set: ${currentPath}`);
     }
   });
 
@@ -278,6 +290,7 @@ function setCurrentYear() {
   const currentYearSpan = document.getElementById("currentYear");
   if (currentYearSpan) {
     currentYearSpan.textContent = new Date().getFullYear();
+    console.log("📅 Footer year updated");
   }
 }
 
@@ -293,7 +306,7 @@ if (document.readyState === "loading") {
     loadPortfolioGallery();
   });
 } else {
-  console.log("✅ DOM already loaded, loading immediately");
+  console.log("✅ DOM already loaded, initializing immediately");
   initializeNavigation();
   setCurrentYear();
   loadPortfolioGallery();
