@@ -1,4 +1,24 @@
-// admin.js - Admin Dashboard JavaScript
+// admin.js - Admin Dashboard JavaScript - Updated for separate hosting
+
+// --- API Configuration ---
+const config = {
+  development: {
+    apiUrl: "http://localhost:3000",
+  },
+  production: {
+    apiUrl: "https://photography-site-8pct.onrender.com",
+  },
+};
+
+const isDevelopment =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+const API_BASE_URL = isDevelopment
+  ? config.development.apiUrl
+  : config.production.apiUrl;
+
+console.log("🔐 Admin Panel API URL:", API_BASE_URL);
 
 // Session timeout configuration (30 minutes)
 const SESSION_TIMEOUT = 30 * 60 * 1000;
@@ -23,7 +43,7 @@ let confirmCallback = null;
   }
 
   try {
-    const response = await fetch("/api/auth/verify", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -34,7 +54,10 @@ let confirmCallback = null;
     }
 
     const data = await response.json();
-    document.getElementById("currentUsername").textContent = data.user.username;
+    const usernameEl = document.getElementById("currentUsername");
+    if (usernameEl) {
+      usernameEl.textContent = data.user.username;
+    }
     resetInactivityTimer();
   } catch (error) {
     console.error("Auth error:", error);
@@ -75,22 +98,22 @@ function logout() {
   window.location.href = "login.html";
 }
 
-// Update fetch to include auth token
-const originalFetch = window.fetch;
-window.fetch = function (...args) {
+// Helper function for authenticated fetch
+async function authFetch(url, options = {}) {
   const token = localStorage.getItem("adminToken");
-  if (token) {
-    if (args[1]) {
-      args[1].headers = {
-        ...args[1].headers,
-        Authorization: `Bearer ${token}`,
-      };
-    } else {
-      args[1] = { headers: { Authorization: `Bearer ${token}` } };
-    }
-  }
-  return originalFetch.apply(this, args);
-};
+
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
+
+  const config = {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  return fetch(fullUrl, config);
+}
 
 // Tab Switching
 function switchTab(event, tabName) {
@@ -117,26 +140,32 @@ function switchTab(event, tabName) {
 
 // On page load, restore the active tab
 document.addEventListener("DOMContentLoaded", () => {
-  const savedTab = localStorage.getItem("activeTab") || "packages"; // default tab
+  const savedTab = localStorage.getItem("activeTab") || "packages";
   const tabButton = document.querySelector(`.tab[onclick*="'${savedTab}'"]`);
   if (tabButton) {
-    tabButton.click(); // triggers switchTab
+    tabButton.click();
   }
 });
 
 // Packages
 async function loadPackages() {
   try {
-    const response = await fetch("/api/packages");
+    const response = await fetch(`${API_BASE_URL}/api/packages`);
     packagesData = await response.json();
-    document.getElementById("packagesLoading").style.display = "none";
+
+    const loadingEl = document.getElementById("packagesLoading");
+    if (loadingEl) loadingEl.style.display = "none";
 
     if (packagesData.length === 0) {
-      document.getElementById("packagesEmpty").style.display = "block";
-      document.getElementById("packagesContent").style.display = "none";
+      const emptyEl = document.getElementById("packagesEmpty");
+      const contentEl = document.getElementById("packagesContent");
+      if (emptyEl) emptyEl.style.display = "block";
+      if (contentEl) contentEl.style.display = "none";
     } else {
-      document.getElementById("packagesEmpty").style.display = "none";
-      document.getElementById("packagesContent").style.display = "block";
+      const emptyEl = document.getElementById("packagesEmpty");
+      const contentEl = document.getElementById("packagesContent");
+      if (emptyEl) emptyEl.style.display = "none";
+      if (contentEl) contentEl.style.display = "block";
       renderPackages();
     }
   } catch (error) {
@@ -151,6 +180,8 @@ async function loadPackages() {
 
 function renderPackages() {
   const tbody = document.getElementById("packagesTableBody");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
   packagesData.forEach((pkg) => {
@@ -183,11 +214,15 @@ function openPackageModal(packageId = null) {
   currentPackageId = packageId;
   const modal = document.getElementById("packageModal");
   const form = document.getElementById("packageForm");
+  if (!modal || !form) return;
+
   form.reset();
   document.getElementById("featuresList").innerHTML = "";
 
   if (packageId) {
-    document.getElementById("packageModalTitle").textContent = "Edit Package";
+    const titleEl = document.getElementById("packageModalTitle");
+    if (titleEl) titleEl.textContent = "Edit Package";
+
     const pkg = packagesData.find((p) => p._id === packageId);
     if (pkg) {
       document.getElementById("packageId").value = pkg._id;
@@ -197,19 +232,23 @@ function openPackageModal(packageId = null) {
       pkg.features.forEach((f) => addFeatureInput(f.text, f.strikethrough));
     }
   } else {
-    document.getElementById("packageModalTitle").textContent = "Add Package";
+    const titleEl = document.getElementById("packageModalTitle");
+    if (titleEl) titleEl.textContent = "Add Package";
     addFeatureInput();
   }
   modal.classList.add("active");
 }
 
 function closePackageModal() {
-  document.getElementById("packageModal").classList.remove("active");
+  const modal = document.getElementById("packageModal");
+  if (modal) modal.classList.remove("active");
   currentPackageId = null;
 }
 
 function addFeatureInput(text = "", strikethrough = false) {
   const featuresList = document.getElementById("featuresList");
+  if (!featuresList) return;
+
   const featureItem = document.createElement("div");
   featureItem.className = "feature-item";
   featureItem.innerHTML = `
@@ -223,58 +262,64 @@ function addFeatureInput(text = "", strikethrough = false) {
   featuresList.appendChild(featureItem);
 }
 
-document.getElementById("packageForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const featureItems = document.querySelectorAll("#featuresList .feature-item");
-  const features = Array.from(featureItems)
-    .map((item) => ({
-      text: item.querySelector('input[type="text"]').value,
-      strikethrough: item.querySelector('input[type="checkbox"]').checked,
-    }))
-    .filter((f) => f.text.trim() !== "");
+const packageForm = document.getElementById("packageForm");
+if (packageForm) {
+  packageForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const featureItems = document.querySelectorAll(
+      "#featuresList .feature-item"
+    );
+    const features = Array.from(featureItems)
+      .map((item) => ({
+        text: item.querySelector('input[type="text"]').value,
+        strikethrough: item.querySelector('input[type="checkbox"]').checked,
+      }))
+      .filter((f) => f.text.trim() !== "");
 
-  const packageData = {
-    name: document.getElementById("packageName").value,
-    price: parseFloat(document.getElementById("packagePrice").value),
-    description: document.getElementById("packageDescription").value,
-    features,
-  };
+    const packageData = {
+      name: document.getElementById("packageName").value,
+      price: parseFloat(document.getElementById("packagePrice").value),
+      description: document.getElementById("packageDescription").value,
+      features,
+    };
 
-  try {
-    const url = currentPackageId
-      ? `/api/packages/${currentPackageId}`
-      : "/api/packages";
-    const method = currentPackageId ? "PUT" : "POST";
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(packageData),
-    });
-
-    if (response.ok) {
-      closePackageModal();
-      loadPackages();
-      showToast({
-        title: "Success",
-        message: currentPackageId ? "Package updated!" : "Package created!",
-        type: "success",
+    try {
+      const url = currentPackageId
+        ? `${API_BASE_URL}/api/packages/${currentPackageId}`
+        : `${API_BASE_URL}/api/packages`;
+      const method = currentPackageId ? "PUT" : "POST";
+      const response = await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(packageData),
       });
-    } else {
+
+      if (response.ok) {
+        closePackageModal();
+        loadPackages();
+        showToast({
+          title: "Success",
+          message: currentPackageId ? "Package updated!" : "Package created!",
+          type: "success",
+        });
+      } else {
+        const data = await response.json();
+        showToast({
+          title: "Error",
+          message: data.msg || "Failed to save package",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error saving package:", error);
       showToast({
         title: "Error",
-        message: "Failed to save package",
+        message: "Error saving package",
         type: "error",
       });
     }
-  } catch (error) {
-    console.error("Error saving package:", error);
-    showToast({
-      title: "Error",
-      message: "Error saving package",
-      type: "error",
-    });
-  }
-});
+  });
+}
 
 function editPackage(id) {
   openPackageModal(id);
@@ -283,16 +328,22 @@ function editPackage(id) {
 // Bookings
 async function loadBookings() {
   try {
-    const response = await fetch("/api/bookings");
+    const response = await authFetch(`${API_BASE_URL}/api/bookings`);
     bookingsData = await response.json();
-    document.getElementById("bookingsLoading").style.display = "none";
+
+    const loadingEl = document.getElementById("bookingsLoading");
+    if (loadingEl) loadingEl.style.display = "none";
 
     if (bookingsData.length === 0) {
-      document.getElementById("bookingsEmpty").style.display = "block";
-      document.getElementById("bookingsContent").style.display = "none";
+      const emptyEl = document.getElementById("bookingsEmpty");
+      const contentEl = document.getElementById("bookingsContent");
+      if (emptyEl) emptyEl.style.display = "block";
+      if (contentEl) contentEl.style.display = "none";
     } else {
-      document.getElementById("bookingsEmpty").style.display = "none";
-      document.getElementById("bookingsContent").style.display = "block";
+      const emptyEl = document.getElementById("bookingsEmpty");
+      const contentEl = document.getElementById("bookingsContent");
+      if (emptyEl) emptyEl.style.display = "none";
+      if (contentEl) contentEl.style.display = "block";
       updateBookingStats();
       renderBookings();
     }
@@ -310,12 +361,17 @@ function updateBookingStats() {
   const total = bookingsData.length;
   const now = new Date();
   const upcoming = bookingsData.filter((b) => new Date(b.date) >= now).length;
-  document.getElementById("totalBookings").textContent = total;
-  document.getElementById("upcomingBookings").textContent = upcoming;
+
+  const totalEl = document.getElementById("totalBookings");
+  const upcomingEl = document.getElementById("upcomingBookings");
+  if (totalEl) totalEl.textContent = total;
+  if (upcomingEl) upcomingEl.textContent = upcoming;
 }
 
 function renderBookings() {
   const tbody = document.getElementById("bookingsTableBody");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
   bookingsData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -327,16 +383,44 @@ function renderBookings() {
       day: "numeric",
     });
 
+    // Generate WhatsApp link
+    const whatsappLink = generateWhatsAppLink(booking);
+
     row.innerHTML = `
       <td><strong>${booking.name}</strong></td>
       <td>${booking.email}</td>
-      <td>${booking.phone}</td>
+      <td>
+        ${booking.phone}
+        <br>
+        <a 
+          href="${whatsappLink}" 
+          target="_blank"
+          style="
+            display: inline-block;
+            margin-top: 5px;
+            background-color: #25D366;
+            color: white;
+            padding: 5px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+          "
+          onmouseover="this.style.backgroundColor='#128C7E'"
+          onmouseout="this.style.backgroundColor='#25D366'"
+        >
+          💬 Send WhatsApp
+        </a>
+      </td>
       <td>${booking.session_type}</td>
       <td>${formattedDate}</td>
       <td>${booking.time}</td>
+      <td>${booking.notes || "N/A"}</td>
       <td>
         <div class="actions">
-          <button class="icon-btn btn-danger" onclick="deleteBooking('${booking._id}', '${booking.name}')">Delete</button>
+          <button class="icon-btn btn-danger" onclick="deleteBooking('${
+            booking._id
+          }', '${booking.name}')">Delete</button>
         </div>
       </td>
     `;
@@ -344,37 +428,88 @@ function renderBookings() {
   });
 }
 
+// Format phone number for WhatsApp
+function formatPhoneForWhatsApp(phone) {
+  const cleanNumber = phone.replace(/[\s\-\(\)]/g, "");
+  let formattedNumber = cleanNumber;
+
+  if (!formattedNumber.startsWith("+")) {
+    if (formattedNumber.startsWith("0")) {
+      formattedNumber = "254" + formattedNumber.substring(1);
+    } else if (!formattedNumber.startsWith("254")) {
+      formattedNumber = "254" + formattedNumber;
+    }
+  } else {
+    formattedNumber = formattedNumber.substring(1);
+  }
+
+  return formattedNumber;
+}
+
+// Generate WhatsApp message link
+function generateWhatsAppLink(booking) {
+  const formattedNumber = formatPhoneForWhatsApp(booking.phone);
+  const date = new Date(booking.date).toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  const message = `✅ Hi ${booking.name}, this is Jr Photography confirming your ${booking.session_type} session on ${date} at ${booking.time}. We look forward to capturing your special moments! 📸`;
+
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${formattedNumber}?text=${encodedMessage}`;
+}
+
 // Portfolio
 async function loadPortfolio() {
   try {
-    const response = await fetch("/api/portfolio");
+    const response = await fetch(`${API_BASE_URL}/api/portfolio`);
     portfolioData = await response.json();
-    document.getElementById("portfolioLoading").style.display = "none";
+
+    const loadingEl = document.getElementById("portfolioLoading");
+    if (loadingEl) loadingEl.style.display = "none";
 
     if (portfolioData.length === 0) {
-      document.getElementById("portfolioEmpty").style.display = "block";
-      document.getElementById("portfolioGrid").style.display = "none";
+      const emptyEl = document.getElementById("portfolioEmpty");
+      const gridEl = document.getElementById("portfolioGrid");
+      if (emptyEl) emptyEl.style.display = "block";
+      if (gridEl) gridEl.style.display = "none";
     } else {
-      document.getElementById("portfolioEmpty").style.display = "none";
-      document.getElementById("portfolioGrid").style.display = "grid";
+      const emptyEl = document.getElementById("portfolioEmpty");
+      const gridEl = document.getElementById("portfolioGrid");
+      if (emptyEl) emptyEl.style.display = "none";
+      if (gridEl) gridEl.style.display = "grid";
       renderPortfolio();
     }
   } catch (error) {
     console.error("Error loading portfolio:", error);
-    document.getElementById("uploadStatus").innerHTML =
-      '<span style="color: #e74c3c;">Failed to load portfolio</span>';
+    const statusEl = document.getElementById("uploadStatus");
+    if (statusEl) {
+      statusEl.innerHTML =
+        '<span style="color: #e74c3c;">Failed to load portfolio</span>';
+    }
   }
 }
 
 function renderPortfolio() {
   const grid = document.getElementById("portfolioGrid");
+  if (!grid) return;
+
   grid.innerHTML = "";
 
   portfolioData.forEach((item) => {
     const portfolioItem = document.createElement("div");
     portfolioItem.className = "portfolio-item";
+
+    // Handle image URL
+    const imageUrl = item.imageUrl.startsWith("http")
+      ? item.imageUrl
+      : `${API_BASE_URL}${item.imageUrl}`;
+
     portfolioItem.innerHTML = `
-      <img src="${item.imageUrl}" alt="${item.altText}" loading="lazy" />
+      <img src="${imageUrl}" alt="${item.altText}" loading="lazy" />
       <div class="portfolio-item-info">
         <h4>${item.title}</h4>
         <span class="category">${item.category}</span>
@@ -391,50 +526,68 @@ function renderPortfolio() {
 const form = document.getElementById("portfolioUploadForm");
 const status = document.getElementById("uploadStatus");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+if (form && status) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  status.textContent = "Uploading...";
-  status.style.color = "black";
+    status.textContent = "Uploading...";
+    status.style.color = "black";
 
-  const formData = new FormData(form);
-  const token = localStorage.getItem("adminToken");
+    const formData = new FormData(form);
+    const token = localStorage.getItem("adminToken");
 
-  try {
-    const response = await fetch("/admin/api/portfolio", {
-      method: "POST",
-      body: formData,
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    if (!token) {
+      status.textContent = "Authentication required. Please login.";
+      status.style.color = "red";
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+      return;
+    }
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.msg || "Upload failed");
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/api/portfolio`, {
+        method: "POST",
+        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    status.textContent = "Upload successful ✅";
-    status.style.color = "green";
-    form.reset();
-  } catch (err) {
-    console.error("UPLOAD ERROR ↓↓↓");
-    console.error(err);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg || "Upload failed");
 
-    status.textContent = err.message || "Upload failed ❌";
-    status.style.color = "red";
-  }
-});
+      status.textContent = "Upload successful ✅";
+      status.style.color = "green";
+      form.reset();
+
+      // Reload portfolio
+      loadPortfolio();
+    } catch (err) {
+      console.error("UPLOAD ERROR:", err);
+      status.textContent = err.message || "Upload failed ❌";
+      status.style.color = "red";
+    }
+  });
+}
 
 // Users
 async function loadUsers() {
   try {
-    const response = await fetch("/api/users");
+    const response = await authFetch(`${API_BASE_URL}/api/users`);
     usersData = await response.json();
-    document.getElementById("usersLoading").style.display = "none";
+
+    const loadingEl = document.getElementById("usersLoading");
+    if (loadingEl) loadingEl.style.display = "none";
 
     if (usersData.length === 0) {
-      document.getElementById("usersEmpty").style.display = "block";
-      document.getElementById("usersContent").style.display = "none";
+      const emptyEl = document.getElementById("usersEmpty");
+      const contentEl = document.getElementById("usersContent");
+      if (emptyEl) emptyEl.style.display = "block";
+      if (contentEl) contentEl.style.display = "none";
     } else {
-      document.getElementById("usersEmpty").style.display = "none";
-      document.getElementById("usersContent").style.display = "block";
+      const emptyEl = document.getElementById("usersEmpty");
+      const contentEl = document.getElementById("usersContent");
+      if (emptyEl) emptyEl.style.display = "none";
+      if (contentEl) contentEl.style.display = "block";
       renderUsers();
     }
   } catch (error) {
@@ -449,6 +602,8 @@ async function loadUsers() {
 
 function renderUsers() {
   const tbody = document.getElementById("usersTableBody");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
   usersData.forEach((user) => {
@@ -478,74 +633,92 @@ function openUserModal(userId = null) {
   currentUserId = userId;
   const modal = document.getElementById("userModal");
   const form = document.getElementById("userForm");
+  if (!modal || !form) return;
+
   form.reset();
 
   if (userId) {
-    document.getElementById("userModalTitle").textContent = "Edit User";
+    const titleEl = document.getElementById("userModalTitle");
+    if (titleEl) titleEl.textContent = "Edit User";
+
     const user = usersData.find((u) => u._id === userId);
     if (user) {
       document.getElementById("userId").value = user._id;
       document.getElementById("userUsername").value = user.username;
       document.getElementById("userRole").value = user.role;
-      document.getElementById("userPassword").required = false;
+      const passwordField = document.getElementById("userPassword");
+      if (passwordField) passwordField.required = false;
     }
   } else {
-    document.getElementById("userModalTitle").textContent = "Add User";
-    document.getElementById("userPassword").required = true;
+    const titleEl = document.getElementById("userModalTitle");
+    if (titleEl) titleEl.textContent = "Add User";
+    const passwordField = document.getElementById("userPassword");
+    if (passwordField) passwordField.required = true;
   }
   modal.classList.add("active");
 }
 
 function closeUserModal() {
-  document.getElementById("userModal").classList.remove("active");
+  const modal = document.getElementById("userModal");
+  if (modal) modal.classList.remove("active");
   currentUserId = null;
 }
 
-document.getElementById("userForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const userData = {
-    username: document.getElementById("userUsername").value,
-    role: document.getElementById("userRole").value,
-  };
+const userForm = document.getElementById("userForm");
+if (userForm) {
+  userForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const userData = {
+      username: document.getElementById("userUsername").value,
+      role: document.getElementById("userRole").value,
+    };
 
-  const password = document.getElementById("userPassword").value;
-  if (password) userData.password = password;
+    const password = document.getElementById("userPassword").value;
+    if (password) userData.password = password;
 
-  try {
-    const url = currentUserId ? `/api/users/${currentUserId}` : "/api/users";
-    const method = currentUserId ? "PUT" : "POST";
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-
-    if (response.ok) {
-      closeUserModal();
-      loadUsers();
-      showToast({
-        title: "Success",
-        message: currentUserId ? "User updated!" : "User created!",
-        type: "success",
+    try {
+      const url = currentUserId
+        ? `${API_BASE_URL}/api/users/${currentUserId}`
+        : `${API_BASE_URL}/api/users`;
+      const method = currentUserId ? "PUT" : "POST";
+      const response = await authFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
       });
-    } else {
-      const data = await response.json();
+
+      if (response.ok) {
+        closeUserModal();
+        loadUsers();
+        showToast({
+          title: "Success",
+          message: currentUserId ? "User updated!" : "User created!",
+          type: "success",
+        });
+      } else {
+        const data = await response.json();
+        showToast({
+          title: "Error",
+          message: data.msg || "Failed to save user",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Error saving user:", error);
       showToast({
         title: "Error",
-        message: data.msg || "Failed to save user",
+        message: "Error saving user",
         type: "error",
       });
     }
-  } catch (error) {
-    console.error("Error saving user:", error);
-    showToast({ title: "Error", message: "Error saving user", type: "error" });
-  }
-});
+  });
+}
 
 function editUser(id) {
   openUserModal(id);
 }
 
+// Delete Functions
 async function deletePackage(id, name) {
   showConfirm({
     title: "Delete Package",
@@ -555,7 +728,7 @@ async function deletePackage(id, name) {
     confirmClass: "btn-danger",
     onConfirm: async () => {
       try {
-        const response = await fetch(`/api/packages/${id}`, {
+        const response = await authFetch(`${API_BASE_URL}/api/packages/${id}`, {
           method: "DELETE",
         });
         if (response.ok) {
@@ -593,7 +766,7 @@ async function deleteBooking(id, name) {
     confirmClass: "btn-danger",
     onConfirm: async () => {
       try {
-        const response = await fetch(`/api/bookings/${id}`, {
+        const response = await authFetch(`${API_BASE_URL}/api/bookings/${id}`, {
           method: "DELETE",
         });
         if (response.ok) {
@@ -631,7 +804,9 @@ async function deleteUser(id, username) {
     confirmClass: "btn-danger",
     onConfirm: async () => {
       try {
-        const response = await fetch(`/api/users/${id}`, { method: "DELETE" });
+        const response = await authFetch(`${API_BASE_URL}/api/users/${id}`, {
+          method: "DELETE",
+        });
         if (response.ok) {
           loadUsers();
           showToast({
@@ -669,10 +844,13 @@ async function deletePortfolioItem(id, title) {
     onConfirm: async () => {
       const token = localStorage.getItem("adminToken");
       try {
-        const response = await fetch(`/admin/api/portfolio/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await fetch(
+          `${API_BASE_URL}/admin/api/portfolio/${id}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.msg || "Failed to delete portfolio item");
@@ -711,6 +889,8 @@ function showConfirm(options = {}) {
   const messageEl = document.getElementById("confirmMessage");
   const confirmBtn = document.getElementById("confirmActionBtn");
 
+  if (!dialog || !icon || !titleEl || !messageEl || !confirmBtn) return;
+
   const icons = {
     danger: "🗑️",
     warning: "⚠️",
@@ -718,7 +898,7 @@ function showConfirm(options = {}) {
     success: "✓",
   };
 
-  confirmCallback = null; // Reset previous callback
+  confirmCallback = null;
 
   icon.textContent = icons[type] || icons.warning;
   icon.className = `confirm-icon ${type}`;
@@ -733,7 +913,8 @@ function showConfirm(options = {}) {
 }
 
 function closeConfirmDialog() {
-  document.getElementById("confirmDialog").classList.remove("active");
+  const dialog = document.getElementById("confirmDialog");
+  if (dialog) dialog.classList.remove("active");
   confirmCallback = null;
 }
 
@@ -742,11 +923,12 @@ function confirmAction() {
   closeConfirmDialog();
 }
 
-document
-  .getElementById("confirmDialog")
-  .addEventListener("click", function (e) {
+const confirmDialog = document.getElementById("confirmDialog");
+if (confirmDialog) {
+  confirmDialog.addEventListener("click", function (e) {
     if (e.target === this) closeConfirmDialog();
   });
+}
 
 // ========== TOAST NOTIFICATIONS ==========
 function showToast(options) {
@@ -758,6 +940,8 @@ function showToast(options) {
   } = options;
 
   const container = document.getElementById("toastContainer");
+  if (!container) return;
+
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
 
@@ -790,96 +974,3 @@ function removeToast(toast) {
 document.addEventListener("DOMContentLoaded", () => {
   loadPackages();
 });
-
-function displayBookings(bookings) {
-  const bookingsTable = document.getElementById("bookings-table");
-  bookingsTable.innerHTML = "";
-
-  if (bookings.length === 0) {
-    bookingsTable.innerHTML =
-      '<tr><td colspan="8">No bookings found.</td></tr>';
-    return;
-  }
-
-  bookings.forEach((booking) => {
-    const row = document.createElement("tr");
-
-    // Format phone number for WhatsApp
-    const formatPhoneForWhatsApp = (phone) => {
-      const cleanNumber = phone.replace(/[\s\-\(\)]/g, "");
-      let formattedNumber = cleanNumber;
-
-      if (!formattedNumber.startsWith("+")) {
-        if (formattedNumber.startsWith("0")) {
-          formattedNumber = "254" + formattedNumber.substring(1);
-        } else if (!formattedNumber.startsWith("254")) {
-          formattedNumber = "254" + formattedNumber;
-        }
-      } else {
-        formattedNumber = formattedNumber.substring(1);
-      }
-
-      return formattedNumber;
-    };
-
-    // Generate WhatsApp message link
-    const generateWhatsAppLink = (booking) => {
-      const formattedNumber = formatPhoneForWhatsApp(booking.phone);
-      const date = new Date(booking.date).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-
-      const message = `✅ Hi ${booking.name}, this is Jr Photography confirming your ${booking.session_type} session on ${date} at ${booking.time}. We look forward to capturing your special moments! 📸`;
-
-      const encodedMessage = encodeURIComponent(message);
-      return `https://wa.me/${formattedNumber}?text=${encodedMessage}`;
-    };
-
-    const whatsappLink = generateWhatsAppLink(booking);
-
-    row.innerHTML = `
-      <td>${new Date(booking.date).toLocaleDateString()}</td>
-      <td>${booking.time}</td>
-      <td>${booking.name}</td>
-      <td>${booking.email}</td>
-      <td>
-        ${booking.phone}
-        <br>
-        <a 
-          href="${whatsappLink}" 
-          target="_blank"
-          style="
-            display: inline-block;
-            margin-top: 5px;
-            background-color: #25D366;
-            color: white;
-            padding: 5px 12px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-          "
-          onmouseover="this.style.backgroundColor='#128C7E'"
-          onmouseout="this.style.backgroundColor='#25D366'"
-        >
-          💬 Send WhatsApp
-        </a>
-      </td>
-      <td>${booking.session_type}</td>
-      <td>${booking.notes || "N/A"}</td>
-      <td>
-        <button 
-          class="btn-danger" 
-          onclick="deleteBooking('${booking._id}')"
-        >
-          Delete
-        </button>
-      </td>
-    `;
-
-    bookingsTable.appendChild(row);
-  });
-}

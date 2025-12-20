@@ -1,27 +1,46 @@
-// public/js/script.js
+// public/js/script.js - Updated for separate frontend/backend hosting
+
+// --- Configuration for API Base URL ---
+const config = {
+  development: {
+    apiUrl: "http://localhost:3000",
+  },
+  production: {
+    apiUrl: "https://photography-site-8pct.onrender.com",
+  },
+};
+
+// Automatically detect environment
+const isDevelopment =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+
+const API_BASE_URL = isDevelopment
+  ? config.development.apiUrl
+  : config.production.apiUrl;
+
+console.log("🌐 API Base URL:", API_BASE_URL);
+console.log("🏠 Environment:", isDevelopment ? "Development" : "Production");
+
+// --- Global Navigation Active State Logic ---
 document.addEventListener("DOMContentLoaded", () => {
-  // --- Global Navigation Active State Logic ---
   const navLinks = document.querySelectorAll(".nav-links a");
   const currentPath = window.location.pathname.split("/").pop() || "index.html";
 
   navLinks.forEach((link) => {
-    // Check if the link's href matches the current file name
     if (link.getAttribute("href") === currentPath) {
-      // Apply a class or inline style for the active state
       link.style.color = "var(--accent-color)";
       link.style.fontWeight = "700";
-      // Trigger the underline effect for the active link
       link.classList.add("active-nav-link");
     }
   });
 
-  // Add event listener to dynamically handle the active-nav-link styling
+  // Add active link styling
   const styleSheet = document.styleSheets[0];
   const activeLinkRule = `.nav-links a.active-nav-link::after { width: 100% !important; left: 0 !important; background: var(--accent-color) !important; }`;
   styleSheet.insertRule(activeLinkRule, styleSheet.cssRules.length);
-  // --- End Global Logic ---
 
-  // --- Portfolio Filtering Logic (for portfolio.html) ---
+  // --- Portfolio Filtering Logic ---
   const portfolioPage = document.getElementById("portfolio-page");
   if (portfolioPage) {
     const filterBtns = document.querySelectorAll(".filter-btn");
@@ -30,128 +49,126 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterGallery = (category) => {
       galleryItems.forEach((item) => {
         const itemCategory = item.getAttribute("data-category");
-        // Check for 'all' or if the category matches
         if (category === "all" || itemCategory === category) {
-          item.style.display = "block"; // Show the item
-          item.style.animation = "fadeIn 0.5s ease-out"; // Optional: fade in
+          item.style.display = "block";
+          item.style.animation = "fadeIn 0.5s ease-out";
         } else {
-          item.style.display = "none"; // Hide the item
+          item.style.display = "none";
         }
       });
     };
 
     filterBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        // Update active button state
         filterBtns.forEach((b) => b.classList.remove("active"));
         e.target.classList.add("active");
-
-        // Filter the gallery
         const category = e.target.getAttribute("data-filter");
         filterGallery(category);
       });
     });
 
-    // Initialize to show all items
     filterGallery("all");
   }
 
-  // Hero background slider (crossfade + Ken Burns)
-  (function initHeroSlider() {
-    const hero = document.getElementById("hero");
-    if (!hero) return;
+  // --- Hero Background Slider ---
+  initHeroSlider();
+});
 
-    // read data-images attribute or fallback to single image
-    const imagesAttr = hero.getAttribute("data-images") || "";
-    const images = imagesAttr
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
+// Hero Slider Function
+function initHeroSlider() {
+  const hero = document.getElementById("hero");
+  if (!hero) return;
 
-    // Fallback: if no images found, try to read inline background or keep hero as-is
-    if (!images.length) {
-      // nothing to do
-      return;
+  const imagesAttr = hero.getAttribute("data-images") || "";
+  const images = imagesAttr
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (!images.length) return;
+
+  const slider = document.getElementById("hero-slider");
+  if (!slider) return;
+
+  images.forEach((src, i) => {
+    const slide = document.createElement("div");
+    slide.className = "slide";
+    slide.style.backgroundImage = `url("${src}")`;
+    if (i === 0) {
+      slide.classList.add("active", "kenburns");
     }
+    slider.appendChild(slide);
+  });
 
-    const slider = document.getElementById("hero-slider");
-    if (!slider) return;
+  const slides = Array.from(slider.querySelectorAll(".slide"));
+  let current = 0;
+  const interval = 7000;
+  const fadeDuration = 1200;
 
-    // create slide elements
-    images.forEach((src, i) => {
-      const slide = document.createElement("div");
-      slide.className = "slide";
-      slide.style.backgroundImage = `url("${src}")`;
-      // initial active set on first slide
-      if (i === 0) {
-        slide.classList.add("active", "kenburns");
-      }
-      slider.appendChild(slide);
-    });
+  const goTo = (index) => {
+    if (index === current) return;
+    const prev = slides[current];
+    const next = slides[index];
 
-    const slides = Array.from(slider.querySelectorAll(".slide"));
-    let current = 0;
-    const interval = 7000; // ms between changes
-    const fadeDuration = 1200;
+    prev.classList.remove("kenburns");
+    next.classList.add("kenburns");
+    prev.classList.remove("active");
 
-    const goTo = (index) => {
-      if (index === current) return;
-      const prev = slides[current];
-      const next = slides[index];
+    setTimeout(() => {}, fadeDuration);
 
-      // ensure kenburns restarts for next
-      prev.classList.remove("kenburns");
-      next.classList.add("kenburns");
+    next.classList.add("active");
+    current = index;
+  };
 
-      // fade
-      prev.classList.remove("active");
-      setTimeout(() => {
-        // after fade-out complete, send previous to back (no action needed because opacity handling)
-      }, fadeDuration);
+  let timer = setInterval(() => {
+    const nextIndex = (current + 1) % slides.length;
+    goTo(nextIndex);
+  }, interval);
 
-      next.classList.add("active");
-
-      current = index;
-    };
-
-    // cycle
-    let timer = setInterval(() => {
+  hero.addEventListener("mouseenter", () => clearInterval(timer));
+  hero.addEventListener("mouseleave", () => {
+    clearInterval(timer);
+    timer = setInterval(() => {
       const nextIndex = (current + 1) % slides.length;
       goTo(nextIndex);
     }, interval);
-
-    // Pause on hover for better UX on touch/desktop
-    const heroEl = hero;
-    heroEl.addEventListener("mouseenter", () => clearInterval(timer));
-    heroEl.addEventListener("mouseleave", () => {
-      clearInterval(timer);
-      timer = setInterval(() => {
-        const nextIndex = (current + 1) % slides.length;
-        goTo(nextIndex);
-      }, interval);
-    });
-
-    // Optional: expose controls for future (not visible now)
-    // hero.dataset.sliderInitialized = 'true';
-  })();
-});
+  });
+}
 
 // --- Load Featured Gallery Items Dynamically ---
 async function loadFeaturedGallery() {
   try {
-    const response = await fetch("/api/portfolio/featured");
+    const response = await fetch(`${API_BASE_URL}/api/portfolio/featured`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
     const items = await response.json();
 
     const gallery = document.querySelector("#preview .gallery");
-    gallery.innerHTML = ""; // remove static images
+    if (!gallery) return;
+
+    gallery.innerHTML = "";
+
+    if (items.length === 0) {
+      gallery.innerHTML =
+        '<p style="text-align: center; color: #666;">No featured items available.</p>';
+      return;
+    }
 
     items.forEach((item) => {
       const div = document.createElement("div");
       div.className = "gallery-item";
       div.dataset.category = item.category;
 
+      // Use full API URL for images if they're served from backend
+      const imageUrl = item.imageUrl.startsWith("http")
+        ? item.imageUrl
+        : `${API_BASE_URL}${item.imageUrl}`;
+
       div.innerHTML = `
-        <img src="${item.imageUrl}" alt="${item.altText}" />
+        <img src="${imageUrl}" alt="${item.altText || "Portfolio image"}" />
         <div class="gallery-item-overlay">
           <p>${
             item.category.charAt(0).toUpperCase() + item.category.slice(1)
@@ -163,37 +180,41 @@ async function loadFeaturedGallery() {
     });
   } catch (err) {
     console.error("Error loading featured gallery:", err);
+    const gallery = document.querySelector("#preview .gallery");
+    if (gallery) {
+      gallery.innerHTML =
+        '<p style="text-align: center; color: #666;">Unable to load gallery items.</p>';
+    }
   }
 }
 
 document.addEventListener("DOMContentLoaded", loadFeaturedGallery);
 
-// Set current year in footer
+// --- Set Current Year in Footer ---
 document.addEventListener("DOMContentLoaded", function () {
   const currentYearSpan = document.getElementById("currentYear");
-  const currentYear = new Date().getFullYear();
   if (currentYearSpan) {
-    // Check if the element exists before trying to update it
-    currentYearSpan.textContent = currentYear;
+    currentYearSpan.textContent = new Date().getFullYear();
   }
 });
 
 // --- Mobile Navigation Toggle ---
-const navToggle = document.querySelector(".nav-toggle");
-const navMenu = document.querySelector(".nav-links"); // directly target the nav-links
-const navLinks = document.querySelectorAll(".nav-links a");
+document.addEventListener("DOMContentLoaded", function () {
+  const navToggle = document.querySelector(".nav-toggle");
+  const navMenu = document.querySelector(".nav-links");
+  const navLinks = document.querySelectorAll(".nav-links a");
 
-if (navToggle && navMenu) {
-  navToggle.addEventListener("click", () => {
-    navToggle.classList.toggle("open");
-    navMenu.classList.toggle("open");
-  });
-
-  // Close menu when a link is clicked
-  navLinks.forEach((link) => {
-    link.addEventListener("click", () => {
-      navToggle.classList.remove("open");
-      navMenu.classList.remove("open");
+  if (navToggle && navMenu) {
+    navToggle.addEventListener("click", () => {
+      navToggle.classList.toggle("open");
+      navMenu.classList.toggle("open");
     });
-  });
-}
+
+    navLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        navToggle.classList.remove("open");
+        navMenu.classList.remove("open");
+      });
+    });
+  }
+});

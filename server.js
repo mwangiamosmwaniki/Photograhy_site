@@ -1,4 +1,4 @@
-// server.js
+// server.js - Updated for separate frontend/backend hosting
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -22,15 +22,48 @@ const User = require("./db/userModel");
 // Import middleware
 const authMiddleware = require("./middleware/authMiddleware");
 
+// --- CORS Configuration for Separate Frontend ---
+const allowedOrigins = [
+  "http://localhost:5173", // Vite dev server
+  "http://localhost:3001", // Alternative local dev
+  "http://localhost:8080", // Another common dev port
+  "http://127.0.0.1:5173", // Local IP variant
+  process.env.FRONTEND_URL, // Production frontend URL
+  process.env.FRONTEND_URL_2, // Optional second frontend URL
+].filter(Boolean); // Remove undefined values
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Allow cookies and authorization headers
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight OPTIONS requests
+app.options("*", cors(corsOptions));
+
 // --- Middleware ---
-app.use(cors()); // Allow cross-origin requests
 app.use(express.json()); // Body parsing middleware for JSON
+app.use(express.urlencoded({ extended: true })); // For form data
 
 // --- Database Connection ---
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully."))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ MongoDB connected successfully."))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // --- Authentication Endpoints ---
 
@@ -196,13 +229,6 @@ We look forward to capturing your special moments!
 /**
  * Send email confirmation with WhatsApp link
  */
-/**
- * Send email confirmation with WhatsApp link - IMPROVED VERSION
- */
-/**
- * Send email confirmation with WhatsApp link - OPTIMIZED VERSION
- * Removed verification step for faster sending
- */
 async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
   console.log("📧 Attempting to send email to:", email);
 
@@ -320,9 +346,9 @@ async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
 }
 
 /**
- * OPTIMIZED BOOKING ENDPOINT
- * - Sends email asynchronously in background
- * - Returns response immediately to user
+ * @route POST /api/book
+ * @desc Create a new booking and send confirmation
+ * OPTIMIZED: Sends email asynchronously in background
  */
 app.post("/api/book", async (req, res) => {
   try {
@@ -332,7 +358,7 @@ app.post("/api/book", async (req, res) => {
     if (!name || !email || !phone || !session_type || !date || !time) {
       return res
         .status(400)
-        .json({ msg: "Please include all required fields." });
+        .json({ success: false, msg: "Please include all required fields." });
     }
 
     // Create the booking
@@ -389,23 +415,34 @@ app.post("/api/book", async (req, res) => {
 
     // ⚡ Return response IMMEDIATELY (don't wait for email)
     res.status(201).json({
+      success: true,
       msg: "Booking confirmed successfully!",
-      booking_id: booking._id,
+      booking: {
+        id: booking._id,
+        name: booking.name,
+        date: booking.date,
+        time: booking.time,
+        session_type: booking.session_type,
+      },
       whatsappLink: whatsappLink,
-      emailSent: "pending", // Email is being sent in background
+      emailStatus: "pending", // Email is being sent in background
     });
   } catch (err) {
     if (err.code === 11000) {
       return res.status(409).json({
+        success: false,
         msg: "This date and time slot is already booked. Please choose another.",
       });
     }
     console.error("❌ Booking error:", err);
-    res
-      .status(500)
-      .json({ msg: "Server error during booking.", error: err.message });
+    res.status(500).json({
+      success: false,
+      msg: "Server error during booking.",
+      error: err.message,
+    });
   }
 });
+
 /**
  * @route GET /api/availability
  * @desc Returns a list of all booked date/time slots.
@@ -572,10 +609,13 @@ app.delete("/api/packages/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// ---image management endpoints would go here---
+// --- Portfolio Routes ---
 app.use("/api/portfolio", require("./routes/portfolioRoutes"));
 app.use("/admin/api/portfolio", require("./routes/adminPortfolioRoutes"));
-app.use("/uploads", express.static("uploads"));
+
+// --- Static file serving for uploads (images) ---
+// This is needed even with separate frontend to serve uploaded images
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // --- User Management Endpoints (PROTECTED) ---
 
@@ -685,12 +725,46 @@ app.delete("/api/users/:id", authMiddleware, async (req, res) => {
   }
 });
 
-// --- Static Files (must come AFTER API routes) ---
-app.use(express.static(path.join(__dirname, "public")));
+// --- Health Check Endpoint ---
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    message: "Jr Photography API is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// --- 404 Handler for undefined routes ---
+app.use((req, res) => {
+  res.status(404).json({
+    msg: "Endpoint not found",
+    path: req.path,
+    method: req.method,
+  });
+});
+
+// --- Error Handler ---
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  res.status(500).json({
+    msg: "Internal server error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+  });
+});
 
 // --- Server Start ---
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Admin login at http://localhost:${PORT}/login.html`);
-  console.log(`Admin dashboard at http://localhost:${PORT}/admin.html`);
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log(`📡 API Base URL: http://localhost:${PORT}/api`);
+  console.log(`🌍 Allowed Origins:`, allowedOrigins);
+  console.log(`🔐 JWT Secret: ${JWT_SECRET ? "✓ Set" : "✗ Not Set"}`);
+  console.log(
+    `📧 Email User: ${process.env.EMAIL_USER ? "✓ Set" : "✗ Not Set"}`
+  );
+  console.log(
+    `📱 WhatsApp Number: ${
+      process.env.BUSINESS_WHATSAPP_NUMBER ? "✓ Set" : "✗ Not Set"
+    }`
+  );
+  console.log(`\n⚡ Ready to accept requests!\n`);
 });

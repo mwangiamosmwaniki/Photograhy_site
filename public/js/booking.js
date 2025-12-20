@@ -1,3 +1,4 @@
+// --- Booking Page Script ---//
 document.addEventListener("DOMContentLoaded", () => {
   const bookingForm = document.getElementById("booking-form");
   if (!bookingForm) return; // Only run on the booking page
@@ -26,11 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "16:00",
   ];
 
-  const API_BASE_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:3000"
-      : "https://photography-site-8pct.onrender.com";
-
   // --- Utility Functions ---
 
   /**
@@ -43,12 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error("Failed to fetch availability.");
       const data = await response.json();
       bookedSlots = data;
-      console.log("Booked Slots:", bookedSlots);
+      console.log("✅ Booked Slots Loaded:", bookedSlots.length);
+
       // Re-render calendar and time slots after fetching
       renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
       updateTimeSlots();
     } catch (error) {
-      console.error("Error fetching availability:", error);
+      console.error("❌ Error fetching availability:", error);
       alert("Could not load booking availability. Please try again later.");
     }
   };
@@ -56,9 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * @function isBooked
    * Checks if a specific date and time is already booked.
-   * @param {string} dateStr - 'YYYY-MM-DD' format
-   * @param {string} timeStr - 'HH:MM' format
-   * @returns {boolean} True if the slot is booked.
    */
   const isBooked = (dateStr, timeStr) => {
     return bookedSlots.some(
@@ -69,8 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /**
    * @function formatDateYMD
    * Formats a Date object to a 'YYYY-MM-DD' string.
-   * @param {Date} date
-   * @returns {string}
    */
   const formatDateYMD = (date) => {
     const year = date.getFullYear();
@@ -82,11 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Calendar & Time Slot Rendering ---
 
   /**
-   * @function renderTimeSlots
+   * @function updateTimeSlots
    * Generates and displays the time slots for the currently selected date.
    */
   const updateTimeSlots = () => {
-    // Defensive checks: ensure the DOM elements exist
     if (!timeSlotPicker || !selectedDateInput || !selectedTimeInput) return;
 
     timeSlotPicker.innerHTML = "";
@@ -97,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Clear previously selected time
     selectedTimeInput.value = "";
 
     availableTimes.forEach((time) => {
@@ -112,17 +102,15 @@ document.addEventListener("DOMContentLoaded", () => {
         slotEl.title = "Booked";
       } else {
         slotEl.addEventListener("click", () => {
-          // Remove 'selected' from all other slots
           document
             .querySelectorAll(".time-slot")
             .forEach((t) => t.classList.remove("selected"));
 
-          // Select the clicked slot
           slotEl.classList.add("selected");
           selectedTimeInput.value = time;
 
-          const errorEl = document.getElementById("error-time");
-          if (errorEl) errorEl.style.display = "none"; // Clear error
+          const errorEl = document.getElementById("error-selected_time");
+          if (errorEl) errorEl.style.display = "none";
         });
       }
 
@@ -135,23 +123,27 @@ document.addEventListener("DOMContentLoaded", () => {
    * Generates and displays the calendar grid for a given month/year.
    */
   const renderCalendar = (year, month) => {
+    if (!calendarEl) return;
+
     calendarEl
       .querySelectorAll(".day:not(.weekday)")
-      .forEach((day) => day.remove()); // Clear previous days
+      .forEach((day) => day.remove());
 
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const numDays = lastDay.getDate();
-    const startDayIndex = firstDay.getDay(); // 0 (Sun) to 6 (Sat)
+    const startDayIndex = firstDay.getDay();
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today's date
+    today.setHours(0, 0, 0, 0);
 
-    monthYearEl.textContent = firstDay.toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
+    if (monthYearEl) {
+      monthYearEl.textContent = firstDay.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
+    }
 
-    // Add empty cells for padding before the first day
+    // Add empty cells for padding
     for (let i = 0; i < startDayIndex; i++) {
       const emptyDay = document.createElement("div");
       emptyDay.classList.add("day", "disabled");
@@ -172,33 +164,31 @@ document.addEventListener("DOMContentLoaded", () => {
       if (date < today) {
         dayEl.classList.add("disabled");
       } else {
-        // Check if any time slots are booked on this date (visual indicator)
+        // Check if all slots are booked
         const isFullyBooked = availableTimes.every((time) =>
           isBooked(dateStr, time)
         );
+
         if (isFullyBooked) {
           dayEl.classList.add("disabled");
           dayEl.title = "Fully Booked";
         }
 
-        // If not disabled, make it clickable
         if (!dayEl.classList.contains("disabled")) {
           dayEl.addEventListener("click", () => {
-            // Remove selection from all days
             document
               .querySelectorAll(".day")
               .forEach((d) => d.classList.remove("selected"));
 
-            // Select the clicked day
             dayEl.classList.add("selected");
-
-            // Update hidden input and time slots
             selectedDateInput.value = dateStr;
-            document.getElementById("error-date").style.display = "none"; // Clear error
+
+            const errorEl = document.getElementById("error-selected_date");
+            if (errorEl) errorEl.style.display = "none";
+
             updateTimeSlots();
           });
 
-          // Set initial selection if input is already set (e.g., re-rendering)
           if (selectedDateInput.value === dateStr) {
             dayEl.classList.add("selected");
           }
@@ -210,57 +200,38 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- Event Listeners for Calendar Navigation ---
-  prevMonthBtn.addEventListener("click", () => {
-    // Prevent going to past months from today
-    const checkDate = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() - 1,
-      1
-    );
-    const todayMonth = new Date();
-    if (
-      checkDate.getFullYear() < todayMonth.getFullYear() ||
-      (checkDate.getFullYear() === todayMonth.getFullYear() &&
-        checkDate.getMonth() < todayMonth.getMonth())
-    ) {
-      return;
-    }
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
-  });
+  if (prevMonthBtn) {
+    prevMonthBtn.addEventListener("click", () => {
+      const checkDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1
+      );
+      const todayMonth = new Date();
+      if (
+        checkDate.getFullYear() < todayMonth.getFullYear() ||
+        (checkDate.getFullYear() === todayMonth.getFullYear() &&
+          checkDate.getMonth() < todayMonth.getMonth())
+      ) {
+        return;
+      }
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    });
+  }
 
-  nextMonthBtn.addEventListener("click", () => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
-  });
+  if (nextMonthBtn) {
+    nextMonthBtn.addEventListener("click", () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    });
+  }
 
-  // --- Client-Side Validation & Submission ---
-
-  /**
-   * @function validateField
-   * Basic client-side validation for a single field.
-   * @param {HTMLElement} inputEl
-   * @param {RegExp} pattern (optional)
-   * @returns {boolean} True if valid.
-   */
-
-  const clientSideValidation = () => {
-    let isFormValid = true;
-
-    // Validate visible inputs
-    isFormValid &= validateField(document.getElementById("session_type"));
-    isFormValid &= validateField(document.getElementById("name"));
-    isFormValid &= validateField(document.getElementById("email"));
-    isFormValid &= validateField(document.getElementById("phone"));
-
-    // Validate hidden inputs (date/time)
-    isFormValid &= validateField(selectedDateInput, null); // optional error element handling
-    isFormValid &= validateField(selectedTimeInput, null);
-
-    return Boolean(isFormValid);
-  };
+  // --- Client-Side Validation ---
 
   const validateField = (inputEl, pattern = null) => {
+    if (!inputEl) return false;
+
     const errorEl = document.getElementById(`error-${inputEl.id}`);
     const value = inputEl.value.trim();
     let isValid = true;
@@ -268,6 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (inputEl.hasAttribute("required") && value === "") {
       isValid = false;
+      errorMessage = "This field is required.";
     } else if (
       inputEl.type === "email" &&
       value !== "" &&
@@ -278,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (
       inputEl.id === "phone" &&
       value !== "" &&
-      !/^[\d\s\-\(\)]+$/.test(value)
+      !/^[\d\s\-\(\)+]+$/.test(value)
     ) {
       isValid = false;
       errorMessage = "Please enter a valid phone number.";
@@ -286,7 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
       isValid = false;
     }
 
-    // Only update the error element if it exists
     if (errorEl) {
       if (isValid) {
         errorEl.style.display = "none";
@@ -301,29 +272,61 @@ document.addEventListener("DOMContentLoaded", () => {
     return isValid;
   };
 
+  const clientSideValidation = () => {
+    let isFormValid = true;
+
+    const fields = [
+      "session_type",
+      "name",
+      "email",
+      "phone",
+      "selected_date",
+      "selected_time",
+    ];
+
+    fields.forEach((fieldId) => {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        isFormValid = validateField(field) && isFormValid;
+      }
+    });
+
+    return isFormValid;
+  };
+
   /**
    * @function showConfirmation
    * Displays the confirmation message and hides the form.
    */
   const showConfirmation = (data) => {
+    if (!confirmationDiv) return;
+
     bookingForm.style.display = "none";
 
-    document.getElementById("conf-email").textContent = data.email;
-    document.getElementById("conf-package").textContent = data.session_type;
-    document.getElementById("conf-date").textContent = new Date(
-      data.date
-    ).toLocaleDateString();
-    document.getElementById("conf-time").textContent = data.time;
-    document.getElementById("conf-phone").textContent = data.phone;
+    const confEmail = document.getElementById("conf-email");
+    const confPackage = document.getElementById("conf-package");
+    const confDate = document.getElementById("conf-date");
+    const confTime = document.getElementById("conf-time");
+    const confPhone = document.getElementById("conf-phone");
+
+    if (confEmail) confEmail.textContent = data.email;
+    if (confPackage) confPackage.textContent = data.session_type;
+    if (confDate)
+      confDate.textContent = new Date(data.date).toLocaleDateString();
+    if (confTime) confTime.textContent = data.time;
+    if (confPhone) confPhone.textContent = data.phone;
 
     confirmationDiv.style.display = "block";
+
+    // Scroll to confirmation
+    confirmationDiv.scrollIntoView({ behavior: "smooth" });
   };
 
   // --- Form Submission Handler ---
   bookingForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // 1. Client-Side Validation
+    // Client-Side Validation
     if (!clientSideValidation()) {
       alert("Please fill out all required fields and correct any errors.");
       return;
@@ -332,18 +335,20 @@ document.addEventListener("DOMContentLoaded", () => {
     submitBtn.disabled = true;
     submitBtn.textContent = "Processing...";
 
-    // 2. Prepare Data
+    // Prepare Data
     const formData = {
-      name: document.getElementById("name").value,
-      email: document.getElementById("email").value,
-      phone: document.getElementById("phone").value,
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      phone: document.getElementById("phone").value.trim(),
       session_type: document.getElementById("session_type").value,
-      date: selectedDateInput.value, // YYYY-MM-DD
-      time: selectedTimeInput.value, // HH:MM
-      notes: document.getElementById("notes").value,
+      date: selectedDateInput.value,
+      time: selectedTimeInput.value,
+      notes: document.getElementById("notes")?.value.trim() || "",
     };
 
-    // 3. API Submission
+    console.log("📤 Submitting booking:", formData);
+
+    // API Submission
     try {
       const response = await fetch(`${API_BASE_URL}/api/book`, {
         method: "POST",
@@ -355,17 +360,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
 
-      if (response.ok) {
-        // Success
+      if (response.ok && data.success) {
+        console.log("✅ Booking successful:", data);
+
+        // Show confirmation
         showConfirmation(formData);
-        // Optionally: Re-fetch availability to update calendar on the client
+
+        // Open WhatsApp link if available
+        if (data.whatsappLink) {
+          setTimeout(() => {
+            window.open(data.whatsappLink, "_blank");
+          }, 1000);
+        }
+
+        // Re-fetch availability
         fetchAvailability();
       } else {
-        // Server validation/Error (e.g., double booking)
         alert(`Booking failed: ${data.msg || "Unknown error."}`);
       }
     } catch (error) {
-      console.error("Submission Error:", error);
+      console.error("❌ Submission Error:", error);
       alert("A network error occurred. Please try again.");
     } finally {
       submitBtn.disabled = false;
@@ -374,6 +388,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Initialization ---
-  // Start by fetching current availability and rendering the calendar for the current month
+  console.log("📅 Initializing booking calendar...");
   fetchAvailability();
 });

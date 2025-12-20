@@ -241,52 +241,153 @@
     </div>
 
     <script>
-      if (localStorage.getItem("adminToken"))
-        window.location.href = "admin.html";
+      // login.js - Admin Login Script - Updated for separate hosting
 
-      const loginForm = document.getElementById("login-form");
-      const loginBtn = document.getElementById("login-btn");
-      const alertDiv = document.getElementById("alert");
+      // --- API Configuration ---
+      const config = {
+        development: {
+          apiUrl: "http://localhost:3000",
+        },
+        production: {
+          apiUrl: "https://photography-site-8pct.onrender.com",
+        },
+      };
 
-      function showAlert(msg, type) {
-        alertDiv.textContent = msg;
-        alertDiv.className = `alert ${type}`;
-        alertDiv.style.display = "block";
-        if (type === "success")
-          setTimeout(() => (alertDiv.style.display = "none"), 2000);
-      }
+      const isDevelopment =
+        window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1";
 
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
+      const API_BASE_URL = isDevelopment
+        ? config.development.apiUrl
+        : config.production.apiUrl;
 
-        loginBtn.disabled = true;
-        loginBtn.textContent = "Logging in...";
+      console.log("🔐 Login API URL:", API_BASE_URL);
 
-        try {
-          const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-          });
-          const data = await res.json();
-          if (res.ok) {
-            showAlert("Login successful! Redirecting...", "success");
-            localStorage.setItem("adminToken", data.token);
-            setTimeout(() => (window.location.href = "admin.html"), 1000);
-          } else {
-            showAlert(data.msg || "Login failed. Please try again.", "error");
-            loginBtn.disabled = false;
-            loginBtn.textContent = "Login";
+      // Check if already logged in
+      document.addEventListener("DOMContentLoaded", async () => {
+        const token = localStorage.getItem("adminToken");
+
+        if (token) {
+          // Verify token is still valid
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+              // Token is valid, redirect to admin
+              window.location.href = "admin.html";
+              return;
+            } else {
+              // Token is invalid, remove it
+              localStorage.removeItem("adminToken");
+            }
+          } catch (error) {
+            console.error("Token verification error:", error);
+            localStorage.removeItem("adminToken");
           }
-        } catch (err) {
-          console.error(err);
-          showAlert("Network error. Please try again.", "error");
-          loginBtn.disabled = false;
-          loginBtn.textContent = "Login";
         }
       });
+
+      // Handle login form submission
+      const loginForm = document.getElementById("loginForm");
+      const loginError = document.getElementById("loginError");
+      const loginButton = document.querySelector('button[type="submit"]');
+
+      if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          // Clear previous error
+          if (loginError) {
+            loginError.style.display = "none";
+            loginError.textContent = "";
+          }
+
+          // Get form data
+          const username = document.getElementById("username").value.trim();
+          const password = document.getElementById("password").value;
+
+          // Client-side validation
+          if (!username || !password) {
+            showError("Please enter both username and password");
+            return;
+          }
+
+          // Disable button and show loading state
+          if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.textContent = "Logging in...";
+          }
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.token) {
+              // Store token
+              localStorage.setItem("adminToken", data.token);
+
+              // Show success message
+              showSuccess("Login successful! Redirecting...");
+
+              // Redirect to admin dashboard
+              setTimeout(() => {
+                window.location.href = "admin.html";
+              }, 500);
+            } else {
+              // Show error message
+              showError(data.msg || "Invalid credentials. Please try again.");
+            }
+          } catch (error) {
+            console.error("Login error:", error);
+            showError(
+              "Network error. Please check your connection and try again."
+            );
+          } finally {
+            // Re-enable button
+            if (loginButton) {
+              loginButton.disabled = false;
+              loginButton.textContent = "Login";
+            }
+          }
+        });
+      }
+
+      // Helper function to show error messages
+      function showError(message) {
+        if (loginError) {
+          loginError.textContent = message;
+          loginError.style.display = "block";
+          loginError.style.color = "#e74c3c";
+        }
+      }
+
+      // Helper function to show success messages
+      function showSuccess(message) {
+        if (loginError) {
+          loginError.textContent = message;
+          loginError.style.display = "block";
+          loginError.style.color = "#27ae60";
+        }
+      }
+
+      // Handle Enter key in password field
+      const passwordField = document.getElementById("password");
+      if (passwordField) {
+        passwordField.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            loginForm.dispatchEvent(new Event("submit"));
+          }
+        });
+      }
     </script>
   </body>
 </html>
