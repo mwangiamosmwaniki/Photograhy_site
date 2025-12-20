@@ -250,49 +250,6 @@
     <footer>
       <p>&copy; 2025 Jr Photography. All rights reserved.</p>
     </footer>
-
-    <script>
-      // Load packages from database when page loads
-      async function loadPackages() {
-        const selectEl = document.getElementById("session_type");
-
-        try {
-          const response = await fetch("/api/packages");
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch packages");
-          }
-
-          const packages = await response.json();
-
-          // Clear loading option
-          selectEl.innerHTML = '<option value="">-- Please Select --</option>';
-
-          // Add each package as an option
-          packages.forEach((pkg) => {
-            const option = document.createElement("option");
-            option.value = pkg.name;
-            option.textContent = `${pkg.name} (Ksh${pkg.price})`;
-            selectEl.appendChild(option);
-          });
-
-          // Check if a package was pre-selected from URL
-          const urlParams = new URLSearchParams(window.location.search);
-          const preSelectedPackage = urlParams.get("package");
-
-          if (preSelectedPackage) {
-            selectEl.value = preSelectedPackage;
-          }
-        } catch (error) {
-          console.error("Error loading packages:", error);
-          selectEl.innerHTML =
-            '<option value="">-- Error loading packages --</option>';
-        }
-      }
-
-      // Load packages when page loads
-      document.addEventListener("DOMContentLoaded", loadPackages);
-    </script>
     <script src="js/script.js"></script>
     <script src="js/booking.js"></script>
   </body>

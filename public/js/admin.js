@@ -1,4 +1,4 @@
-// admin.js - Admin Dashboard JavaScript - Fixed version
+// admin.js - Admin Dashboard JavaScript - Updated for separate hosting
 
 // --- API Configuration ---
 const config = {
@@ -19,7 +19,6 @@ const API_BASE_URL = isDevelopment
   : config.production.apiUrl;
 
 console.log("🔐 Admin Panel API URL:", API_BASE_URL);
-console.log("🌍 Environment:", isDevelopment ? "Development" : "Production");
 
 // Session timeout configuration (30 minutes)
 const SESSION_TIMEOUT = 30 * 60 * 1000;
@@ -31,47 +30,37 @@ let packagesData = [];
 let bookingsData = [];
 let usersData = [];
 let portfolioData = [];
+
+// Confirm callback
 let confirmCallback = null;
 
 // Authentication and Session Management
 (async function checkAuth() {
   const token = localStorage.getItem("adminToken");
-  console.log("🔑 Token present:", !!token);
-
   if (!token) {
-    console.log("❌ No token found, redirecting to login");
     window.location.href = "login.html";
     return;
   }
 
   try {
-    console.log("🔍 Verifying token...");
     const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log("📊 Verify response status:", response.status);
-
     if (!response.ok) {
-      console.log("❌ Token invalid, redirecting to login");
       localStorage.removeItem("adminToken");
       window.location.href = "login.html";
       return;
     }
 
     const data = await response.json();
-    console.log("✅ Authentication successful:", data.user);
-
     const usernameEl = document.getElementById("currentUsername");
     if (usernameEl) {
       usernameEl.textContent = data.user.username;
     }
     resetInactivityTimer();
-
-    // Load packages immediately after auth
-    loadPackages();
   } catch (error) {
-    console.error("❌ Auth error:", error);
+    console.error("Auth error:", error);
     localStorage.removeItem("adminToken");
     window.location.href = "login.html";
   }
@@ -112,9 +101,8 @@ function logout() {
 // Helper function for authenticated fetch
 async function authFetch(url, options = {}) {
   const token = localStorage.getItem("adminToken");
-  const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
 
-  console.log(`📡 Auth Fetch: ${options.method || "GET"} ${fullUrl}`);
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE_URL}${url}`;
 
   const config = {
     ...options,
@@ -129,8 +117,6 @@ async function authFetch(url, options = {}) {
 
 // Tab Switching
 function switchTab(event, tabName) {
-  console.log("🔄 Switching to tab:", tabName);
-
   // Remove active classes
   document
     .querySelectorAll(".tab")
@@ -143,64 +129,50 @@ function switchTab(event, tabName) {
   event.target.classList.add("active");
   document.getElementById(tabName).classList.add("active");
 
-  // Call specific tab loaders
+  // Call your specific tab loaders
   if (tabName === "bookings") loadBookings();
   else if (tabName === "users") loadUsers();
-  else if (tabName === "packages") loadPackages();
   else if (tabName === "portfolio") loadPortfolio();
 
   // Save the active tab in localStorage
   localStorage.setItem("activeTab", tabName);
 }
 
+// On page load, restore the active tab
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTab = localStorage.getItem("activeTab") || "packages";
+  const tabButton = document.querySelector(`.tab[onclick*="'${savedTab}'"]`);
+  if (tabButton) {
+    tabButton.click();
+  }
+});
+
 // Packages
 async function loadPackages() {
-  console.log("📦 Loading packages...");
-
-  const loadingEl = document.getElementById("packagesLoading");
-  const contentEl = document.getElementById("packagesContent");
-  const emptyEl = document.getElementById("packagesEmpty");
-  const errorEl = document.getElementById("packagesError");
-
-  // Show loading
-  if (loadingEl) loadingEl.style.display = "block";
-  if (contentEl) contentEl.style.display = "none";
-  if (emptyEl) emptyEl.style.display = "none";
-  if (errorEl) errorEl.style.display = "none";
-
   try {
     const response = await fetch(`${API_BASE_URL}/api/packages`);
-    console.log("📊 Packages response status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
     packagesData = await response.json();
-    console.log("✅ Packages loaded:", packagesData.length);
 
+    const loadingEl = document.getElementById("packagesLoading");
     if (loadingEl) loadingEl.style.display = "none";
 
     if (packagesData.length === 0) {
-      console.log("📭 No packages found");
+      const emptyEl = document.getElementById("packagesEmpty");
+      const contentEl = document.getElementById("packagesContent");
       if (emptyEl) emptyEl.style.display = "block";
       if (contentEl) contentEl.style.display = "none";
     } else {
-      console.log("📋 Rendering packages");
+      const emptyEl = document.getElementById("packagesEmpty");
+      const contentEl = document.getElementById("packagesContent");
       if (emptyEl) emptyEl.style.display = "none";
       if (contentEl) contentEl.style.display = "block";
       renderPackages();
     }
   } catch (error) {
-    console.error("❌ Error loading packages:", error);
-    if (loadingEl) loadingEl.style.display = "none";
-    if (errorEl) {
-      errorEl.textContent = `Failed to load packages: ${error.message}`;
-      errorEl.style.display = "block";
-    }
+    console.error("Error loading packages:", error);
     showToast({
       title: "Error",
-      message: `Failed to load packages: ${error.message}`,
+      message: "Failed to load packages",
       type: "error",
     });
   }
@@ -208,16 +180,11 @@ async function loadPackages() {
 
 function renderPackages() {
   const tbody = document.getElementById("packagesTableBody");
-  if (!tbody) {
-    console.error("❌ packagesTableBody not found");
-    return;
-  }
+  if (!tbody) return;
 
   tbody.innerHTML = "";
-  console.log("🎨 Rendering", packagesData.length, "packages");
 
-  packagesData.forEach((pkg, index) => {
-    console.log(`📝 Rendering package ${index + 1}:`, pkg.name);
+  packagesData.forEach((pkg) => {
     const row = document.createElement("tr");
     const featuresText = pkg.features
       .map((f) => (f.strikethrough ? `~~${f.text}~~` : f.text))
@@ -299,8 +266,6 @@ const packageForm = document.getElementById("packageForm");
 if (packageForm) {
   packageForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    console.log("💾 Saving package...");
-
     const featureItems = document.querySelectorAll(
       "#featuresList .feature-item"
     );
@@ -318,23 +283,16 @@ if (packageForm) {
       features,
     };
 
-    console.log("📦 Package data:", packageData);
-
     try {
       const url = currentPackageId
         ? `${API_BASE_URL}/api/packages/${currentPackageId}`
         : `${API_BASE_URL}/api/packages`;
       const method = currentPackageId ? "PUT" : "POST";
-
-      console.log(`📡 ${method} ${url}`);
-
       const response = await authFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(packageData),
       });
-
-      console.log("📊 Save response status:", response.status);
 
       if (response.ok) {
         closePackageModal();
@@ -346,7 +304,6 @@ if (packageForm) {
         });
       } else {
         const data = await response.json();
-        console.error("❌ Save failed:", data);
         showToast({
           title: "Error",
           message: data.msg || "Failed to save package",
@@ -354,7 +311,7 @@ if (packageForm) {
         });
       }
     } catch (error) {
-      console.error("❌ Error saving package:", error);
+      console.error("Error saving package:", error);
       showToast({
         title: "Error",
         message: "Error saving package",
@@ -370,50 +327,31 @@ function editPackage(id) {
 
 // Bookings
 async function loadBookings() {
-  console.log("📅 Loading bookings...");
-
-  const loadingEl = document.getElementById("bookingsLoading");
-  const contentEl = document.getElementById("bookingsContent");
-  const emptyEl = document.getElementById("bookingsEmpty");
-  const errorEl = document.getElementById("bookingsError");
-
-  if (loadingEl) loadingEl.style.display = "block";
-  if (contentEl) contentEl.style.display = "none";
-  if (emptyEl) emptyEl.style.display = "none";
-  if (errorEl) errorEl.style.display = "none";
-
   try {
     const response = await authFetch(`${API_BASE_URL}/api/bookings`);
-    console.log("📊 Bookings response status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
     bookingsData = await response.json();
-    console.log("✅ Bookings loaded:", bookingsData.length);
 
+    const loadingEl = document.getElementById("bookingsLoading");
     if (loadingEl) loadingEl.style.display = "none";
 
     if (bookingsData.length === 0) {
+      const emptyEl = document.getElementById("bookingsEmpty");
+      const contentEl = document.getElementById("bookingsContent");
       if (emptyEl) emptyEl.style.display = "block";
       if (contentEl) contentEl.style.display = "none";
     } else {
+      const emptyEl = document.getElementById("bookingsEmpty");
+      const contentEl = document.getElementById("bookingsContent");
       if (emptyEl) emptyEl.style.display = "none";
       if (contentEl) contentEl.style.display = "block";
       updateBookingStats();
       renderBookings();
     }
   } catch (error) {
-    console.error("❌ Error loading bookings:", error);
-    if (loadingEl) loadingEl.style.display = "none";
-    if (errorEl) {
-      errorEl.textContent = `Failed to load bookings: ${error.message}`;
-      errorEl.style.display = "block";
-    }
+    console.error("Error loading bookings:", error);
     showToast({
       title: "Error",
-      message: `Failed to load bookings: ${error.message}`,
+      message: "Failed to load bookings",
       type: "error",
     });
   }
@@ -445,6 +383,7 @@ function renderBookings() {
       day: "numeric",
     });
 
+    // Generate WhatsApp link
     const whatsappLink = generateWhatsAppLink(booking);
 
     row.innerHTML = `
@@ -467,8 +406,10 @@ function renderBookings() {
             font-size: 12px;
             font-weight: bold;
           "
+          onmouseover="this.style.backgroundColor='#128C7E'"
+          onmouseout="this.style.backgroundColor='#25D366'"
         >
-          💬 WhatsApp
+          💬 Send WhatsApp
         </a>
       </td>
       <td>${booking.session_type}</td>
@@ -487,6 +428,7 @@ function renderBookings() {
   });
 }
 
+// Format phone number for WhatsApp
 function formatPhoneForWhatsApp(phone) {
   const cleanNumber = phone.replace(/[\s\-\(\)]/g, "");
   let formattedNumber = cleanNumber;
@@ -504,6 +446,7 @@ function formatPhoneForWhatsApp(phone) {
   return formattedNumber;
 }
 
+// Generate WhatsApp message link
 function generateWhatsAppLink(booking) {
   const formattedNumber = formatPhoneForWhatsApp(booking.phone);
   const date = new Date(booking.date).toLocaleDateString("en-US", {
@@ -521,40 +464,27 @@ function generateWhatsAppLink(booking) {
 
 // Portfolio
 async function loadPortfolio() {
-  console.log("🖼️ Loading portfolio...");
-
-  const loadingEl = document.getElementById("portfolioLoading");
-  const gridEl = document.getElementById("portfolioGrid");
-  const emptyEl = document.getElementById("portfolioEmpty");
-
-  if (loadingEl) loadingEl.style.display = "block";
-  if (gridEl) gridEl.style.display = "none";
-  if (emptyEl) emptyEl.style.display = "none";
-
   try {
     const response = await fetch(`${API_BASE_URL}/api/portfolio`);
-    console.log("📊 Portfolio response status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
     portfolioData = await response.json();
-    console.log("✅ Portfolio loaded:", portfolioData.length);
 
+    const loadingEl = document.getElementById("portfolioLoading");
     if (loadingEl) loadingEl.style.display = "none";
 
     if (portfolioData.length === 0) {
+      const emptyEl = document.getElementById("portfolioEmpty");
+      const gridEl = document.getElementById("portfolioGrid");
       if (emptyEl) emptyEl.style.display = "block";
       if (gridEl) gridEl.style.display = "none";
     } else {
+      const emptyEl = document.getElementById("portfolioEmpty");
+      const gridEl = document.getElementById("portfolioGrid");
       if (emptyEl) emptyEl.style.display = "none";
       if (gridEl) gridEl.style.display = "grid";
       renderPortfolio();
     }
   } catch (error) {
-    console.error("❌ Error loading portfolio:", error);
-    if (loadingEl) loadingEl.style.display = "none";
+    console.error("Error loading portfolio:", error);
     const statusEl = document.getElementById("uploadStatus");
     if (statusEl) {
       statusEl.innerHTML =
@@ -593,23 +523,22 @@ function renderPortfolio() {
 }
 
 // Handle portfolio upload form submission
-const portfolioForm = document.getElementById("portfolioUploadForm");
-const uploadStatus = document.getElementById("uploadStatus");
+const form = document.getElementById("portfolioUploadForm");
+const status = document.getElementById("uploadStatus");
 
-if (portfolioForm && uploadStatus) {
-  portfolioForm.addEventListener("submit", async (e) => {
+if (form && status) {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    console.log("📤 Uploading portfolio image...");
 
-    uploadStatus.textContent = "Uploading...";
-    uploadStatus.style.color = "black";
+    status.textContent = "Uploading...";
+    status.style.color = "black";
 
-    const formData = new FormData(portfolioForm);
+    const formData = new FormData(form);
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
-      uploadStatus.textContent = "Authentication required. Please login.";
-      uploadStatus.style.color = "red";
+      status.textContent = "Authentication required. Please login.";
+      status.style.color = "red";
       setTimeout(() => {
         window.location.href = "login.html";
       }, 2000);
@@ -623,108 +552,49 @@ if (portfolioForm && uploadStatus) {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("📊 Upload response status:", response.status);
-
       const data = await response.json();
       if (!response.ok) throw new Error(data.msg || "Upload failed");
 
-      uploadStatus.textContent = "Upload successful ✅";
-      uploadStatus.style.color = "green";
-      portfolioForm.reset();
+      status.textContent = "Upload successful ✅";
+      status.style.color = "green";
+      form.reset();
 
       // Reload portfolio
       loadPortfolio();
     } catch (err) {
-      console.error("❌ UPLOAD ERROR:", err);
-      uploadStatus.textContent = err.message || "Upload failed ❌";
-      uploadStatus.style.color = "red";
+      console.error("UPLOAD ERROR:", err);
+      status.textContent = err.message || "Upload failed ❌";
+      status.style.color = "red";
     }
-  });
-}
-
-async function deletePortfolioItem(id, title) {
-  showConfirm({
-    title: "Delete Portfolio Item",
-    message: `Delete "${title}"? This action cannot be undone.`,
-    type: "danger",
-    confirmText: "Delete",
-    confirmClass: "btn-danger",
-    onConfirm: async () => {
-      const token = localStorage.getItem("adminToken");
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/admin/api/portfolio/${id}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        const data = await response.json();
-        if (!response.ok)
-          throw new Error(data.msg || "Failed to delete portfolio item");
-        loadPortfolio();
-        showToast({
-          title: "Deleted",
-          message: "Portfolio item deleted",
-          type: "success",
-        });
-      } catch (err) {
-        console.error(err);
-        showToast({
-          title: "Error",
-          message: err.message || "Error deleting portfolio item",
-          type: "error",
-        });
-      }
-    },
   });
 }
 
 // Users
 async function loadUsers() {
-  console.log("👥 Loading users...");
-
-  const loadingEl = document.getElementById("usersLoading");
-  const contentEl = document.getElementById("usersContent");
-  const emptyEl = document.getElementById("usersEmpty");
-  const errorEl = document.getElementById("usersError");
-
-  if (loadingEl) loadingEl.style.display = "block";
-  if (contentEl) contentEl.style.display = "none";
-  if (emptyEl) emptyEl.style.display = "none";
-  if (errorEl) errorEl.style.display = "none";
-
   try {
     const response = await authFetch(`${API_BASE_URL}/api/users`);
-    console.log("📊 Users response status:", response.status);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
     usersData = await response.json();
-    console.log("✅ Users loaded:", usersData.length);
 
+    const loadingEl = document.getElementById("usersLoading");
     if (loadingEl) loadingEl.style.display = "none";
 
     if (usersData.length === 0) {
+      const emptyEl = document.getElementById("usersEmpty");
+      const contentEl = document.getElementById("usersContent");
       if (emptyEl) emptyEl.style.display = "block";
       if (contentEl) contentEl.style.display = "none";
     } else {
+      const emptyEl = document.getElementById("usersEmpty");
+      const contentEl = document.getElementById("usersContent");
       if (emptyEl) emptyEl.style.display = "none";
       if (contentEl) contentEl.style.display = "block";
       renderUsers();
     }
   } catch (error) {
-    console.error("❌ Error loading users:", error);
-    if (loadingEl) loadingEl.style.display = "none";
-    if (errorEl) {
-      errorEl.textContent = `Failed to load users: ${error.message}`;
-      errorEl.style.display = "block";
-    }
+    console.error("Error loading users:", error);
     showToast({
       title: "Error",
-      message: `Failed to load users: ${error.message}`,
+      message: "Failed to load users",
       type: "error",
     });
   }
@@ -964,7 +834,45 @@ async function deleteUser(id, username) {
   });
 }
 
-// Confirmation Dialog
+async function deletePortfolioItem(id, title) {
+  showConfirm({
+    title: "Delete Portfolio Item",
+    message: `Delete "${title}"? This action cannot be undone.`,
+    type: "danger",
+    confirmText: "Delete",
+    confirmClass: "btn-danger",
+    onConfirm: async () => {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/admin/api/portfolio/${id}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await response.json();
+        if (!response.ok)
+          throw new Error(data.msg || "Failed to delete portfolio item");
+        loadPortfolio();
+        showToast({
+          title: "Deleted",
+          message: "Portfolio item deleted",
+          type: "success",
+        });
+      } catch (err) {
+        console.error(err);
+        showToast({
+          title: "Error",
+          message: err.message || "Error deleting portfolio item",
+          type: "error",
+        });
+      }
+    },
+  });
+}
+
+// ========== CONFIRMATION DIALOG ==========
 function showConfirm(options = {}) {
   const {
     title = "Confirm Action",
@@ -993,6 +901,7 @@ function showConfirm(options = {}) {
   confirmCallback = null;
 
   icon.textContent = icons[type] || icons.warning;
+  icon.className = `confirm-icon ${type}`;
   titleEl.textContent = title;
   messageEl.textContent = message;
   confirmBtn.textContent = confirmText;
@@ -1021,7 +930,7 @@ if (confirmDialog) {
   });
 }
 
-// Toast Notifications
+// ========== TOAST NOTIFICATIONS ==========
 function showToast(options) {
   const {
     title = "Notification",
@@ -1030,12 +939,8 @@ function showToast(options) {
     duration = 4000,
   } = options;
 
-  let container = document.getElementById("toastContainer");
-  if (!container) {
-    container = document.createElement("div");
-    container.id = "toastContainer";
-    document.body.appendChild(container);
-  }
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
 
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
@@ -1064,3 +969,8 @@ function removeToast(toast) {
     if (toast.parentElement) toast.parentElement.removeChild(toast);
   }, 300);
 }
+
+// Initialize
+document.addEventListener("DOMContentLoaded", () => {
+  loadPackages();
+});

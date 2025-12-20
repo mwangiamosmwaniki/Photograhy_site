@@ -1,4 +1,18 @@
 // --- Booking Page Script ---//
+
+// Define API_BASE_URL locally in case script.js hasn't loaded yet
+const getAPIBaseURL = () => {
+  const isDevelopment =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+
+  return isDevelopment
+    ? "http://localhost:3000"
+    : "https://photography-site-8pct.onrender.com";
+};
+
+const API_BASE_URL = window.API_BASE_URL || getAPIBaseURL();
+
 document.addEventListener("DOMContentLoaded", () => {
   const bookingForm = document.getElementById("booking-form");
   if (!bookingForm) return; // Only run on the booking page
@@ -27,6 +41,48 @@ document.addEventListener("DOMContentLoaded", () => {
     "16:00",
   ];
 
+  // --- Load packages from database ---
+  async function loadPackages() {
+    const selectEl = document.getElementById("session_type");
+    if (!selectEl) return;
+
+    try {
+      console.log("📦 Loading packages from:", `${API_BASE_URL}/api/packages`);
+      const response = await fetch(`${API_BASE_URL}/api/packages`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch packages: ${response.status}`);
+      }
+
+      const packages = await response.json();
+      console.log("✅ Packages loaded:", packages);
+
+      // Clear loading option
+      selectEl.innerHTML = '<option value="">-- Please Select --</option>';
+
+      // Add each package as an option
+      packages.forEach((pkg) => {
+        const option = document.createElement("option");
+        option.value = pkg.name;
+        option.textContent = `${pkg.name} (Ksh${pkg.price})`;
+        selectEl.appendChild(option);
+      });
+
+      // Check if a package was pre-selected from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const preSelectedPackage = urlParams.get("package");
+
+      if (preSelectedPackage) {
+        selectEl.value = preSelectedPackage;
+      }
+    } catch (error) {
+      console.error("❌ Error loading packages:", error);
+      selectEl.innerHTML =
+        '<option value="">-- Error loading packages --</option>';
+      alert("Failed to load packages. Please refresh the page.");
+    }
+  }
+
   // --- Utility Functions ---
 
   /**
@@ -35,6 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   const fetchAvailability = async () => {
     try {
+      console.log(
+        "📅 Fetching availability from:",
+        `${API_BASE_URL}/api/availability`
+      );
       const response = await fetch(`${API_BASE_URL}/api/availability`);
       if (!response.ok) throw new Error("Failed to fetch availability.");
       const data = await response.json();
@@ -388,6 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Initialization ---
-  console.log("📅 Initializing booking calendar...");
+  console.log("📅 Initializing booking system with API:", API_BASE_URL);
+  loadPackages();
   fetchAvailability();
 });
