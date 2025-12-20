@@ -229,16 +229,72 @@ function initializeFilters() {
   console.log("✅ Filters ready!");
 }
 
-// Initialize when DOM is ready
+// Initialize navigation toggle
+function initializeNavigation() {
+  const navToggle = document.querySelector(".nav-toggle");
+  const navMenu = document.querySelector(".nav-menu");
+  const navLinks = document.querySelectorAll(".nav-links a");
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener("click", () => {
+      navToggle.classList.toggle("open");
+      navMenu.classList.toggle("open");
+    });
+
+    // Close menu when clicking on a link
+    navLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        navToggle.classList.remove("open");
+        navMenu.classList.remove("open");
+      });
+    });
+  }
+
+  // Set active navigation link
+  const currentPath = window.location.pathname.split("/").pop() || "index.html";
+
+  navLinks.forEach((link) => {
+    if (link.getAttribute("href") === currentPath) {
+      link.style.color = "var(--accent-color)";
+      link.style.fontWeight = "700";
+      link.classList.add("active-nav-link");
+    }
+  });
+
+  // Add active link styling dynamically
+  const style = document.createElement("style");
+  style.textContent = `
+    .nav-links a.active-nav-link::after {
+      width: 100% !important;
+      left: 0 !important;
+      background: var(--accent-color) !important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// Set current year in footer
+function setCurrentYear() {
+  const currentYearSpan = document.getElementById("currentYear");
+  if (currentYearSpan) {
+    currentYearSpan.textContent = new Date().getFullYear();
+  }
+}
+
+// Initialize everything when DOM is ready
 console.log("📄 Document ready state:", document.readyState);
 
 if (document.readyState === "loading") {
   console.log("⏳ Waiting for DOMContentLoaded...");
   document.addEventListener("DOMContentLoaded", () => {
     console.log("✅ DOMContentLoaded fired");
+    initializeNavigation();
+    setCurrentYear();
     loadPortfolioGallery();
   });
 } else {
   console.log("✅ DOM already loaded, loading immediately");
+  initializeNavigation();
+  setCurrentYear();
   loadPortfolioGallery();
 }
