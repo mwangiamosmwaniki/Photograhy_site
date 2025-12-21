@@ -473,6 +473,12 @@
         }
       }
     </style>
+    <script>
+      // Immediate auth check - before page renders
+      if (!localStorage.getItem("adminToken")) {
+        window.location.href = "login.html";
+      }
+    </script>
   </head>
   <body>
     <div class="header">
