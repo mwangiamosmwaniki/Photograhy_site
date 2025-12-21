@@ -76,6 +76,24 @@
         }
       }
 
+      .logo-section {
+        text-align: center;
+        margin-bottom: 35px;
+      }
+
+      .logo-icon {
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      }
+
+      .logo-icon i {
+        font-size: 32px;
+        color: white;
+      }
       /* Logo container */
       .logo {
         display: flex;
@@ -314,15 +332,24 @@
         h1 {
           font-size: 24px;
         }
+        .logo-icon {
+          width: 60px;
+          height: 60px;
+        }
+        .logo-icon i {
+          font-size: 28px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="login-container">
       <div class="logo-section">
-        <a class="logo">
-          <img src="images/icon.webp" alt="JR Pixels Logo" />
-        </a>
+        <div class="logo-icon">
+          <a class="logo">
+            <img src="icon.webp" alt="JR Pixels Logo" />
+          </a>
+        </div>
         <h1>Admin Login</h1>
         <p class="subtitle">Enter your credentials to continue</p>
       </div>
