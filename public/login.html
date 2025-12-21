@@ -5,14 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login - Jr photography</title>
     <link rel="icon" type="image/svg+xml" href="/images/icon.webp" />
-    <!-- Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      integrity="sha512-pap2P0vUjz3YBShYr6hwQ3vG7FH2RVqkH3MimCdrtRI6ukpZy2yZ/7e3+lOOaZy7rPFL8HJXqNfXy5lG4eZw+A=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
     <style>
       /* Global Reset */
       * {
@@ -76,20 +68,21 @@
         font-weight: 700;
       }
 
-      /* Input with Icons */
+      /* Icon container */
       .input-group {
         position: relative;
         margin-bottom: 20px;
         text-align: left;
       }
 
-      .input-group i {
+      .input-group .icon {
         position: absolute;
         left: 14px;
         top: 50%;
         transform: translateY(-50%);
         color: #999;
         transition: color 0.3s;
+        font-size: 18px;
       }
 
       input {
@@ -108,7 +101,7 @@
         box-shadow: 0 0 10px rgba(255, 95, 109, 0.4);
       }
 
-      input:focus + i {
+      input:focus ~ .icon {
         color: #ff5f6d;
       }
 
@@ -185,19 +178,6 @@
         text-decoration: underline;
       }
 
-      /* Debug info (remove in production) */
-      .debug-info {
-        position: fixed;
-        bottom: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        max-width: 300px;
-      }
-
       /* Responsive */
       @media (max-width: 480px) {
         .login-container {
@@ -230,7 +210,7 @@
             autocomplete="username"
             placeholder="Username"
           />
-          <i class="fa-solid fa-user"></i>
+          <span class="icon">👤</span>
         </div>
 
         <div class="input-group">
@@ -242,7 +222,7 @@
             autocomplete="current-password"
             placeholder="Password"
           />
-          <i class="fa-solid fa-lock"></i>
+          <span class="icon">🔒</span>
         </div>
 
         <button type="submit" class="btn" id="login-btn">Login</button>
@@ -273,9 +253,6 @@
         : config.production.apiUrl;
 
       console.log("🔐 Login Page API URL:", API_BASE_URL);
-
-      // Display API URL for debugging
-      document.getElementById("api-url-display").textContent = API_BASE_URL;
 
       // Check if already logged in
       if (localStorage.getItem("adminToken")) {
