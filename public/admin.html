@@ -16,6 +16,12 @@
           sans-serif;
         background: #f5f5f5;
         color: #333;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      /* Hide content until auth check completes */
+      body.authenticated {
+        opacity: 1;
       }
       .header {
         background: #2c3e50;
@@ -473,12 +479,17 @@
         }
       }
     </style>
-    <script>
-      // Immediate auth check - before page renders
-      if (!localStorage.getItem("adminToken")) {
-        window.location.href = "login.html";
+    <style>
+      /* Hide content until auth check completes */
+      body {
+        opacity: 0;
+        transition: opacity 0.3s ease;
       }
-    </script>
+
+      body.authenticated {
+        opacity: 1;
+      }
+    </style>
   </head>
   <body>
     <div class="header">
