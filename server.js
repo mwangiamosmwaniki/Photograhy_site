@@ -1,4 +1,114 @@
-// Add this new function after the sendEmailConfirmation function
+// ========================================
+// ADD THIS SECTION AFTER YOUR EXISTING transporter SETUP
+// (After the line: const transporter = nodemailer.createTransport({...}))
+// ========================================
+
+/**
+ * Send email confirmation to customer with WhatsApp link
+ */
+async function sendEmailConfirmation(email, bookingDetails, whatsappLink) {
+  console.log("📧 Attempting to send customer email to:", email);
+
+  const mailOptions = {
+    from: `"Jr Photography" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Booking Confirmation - Jr Photography",
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; }
+          .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; }
+          .detail-row { margin: 10px 0; padding: 10px; background-color: white; }
+          .label { font-weight: bold; color: #555; }
+          .whatsapp-btn { 
+            display: inline-block; 
+            background-color: #25D366; 
+            color: white; 
+            padding: 15px 30px; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            margin: 20px 0;
+            font-weight: bold;
+          }
+          .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Booking Confirmed!</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${bookingDetails.name},</p>
+            <p>Thank you for booking with Jr Photography! Your session has been confirmed.</p>
+            
+            <div class="detail-row">
+              <span class="label">📅 Date:</span> ${bookingDetails.date}
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">⏰ Time:</span> ${bookingDetails.time}
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">📦 Package:</span> ${
+                bookingDetails.session_type
+              }
+            </div>
+            
+            <div class="detail-row">
+              <span class="label">📱 Phone:</span> ${bookingDetails.phone}
+            </div>
+            
+            ${
+              bookingDetails.notes
+                ? `
+            <div class="detail-row">
+              <span class="label">📝 Notes:</span> ${bookingDetails.notes}
+            </div>
+            `
+                : ""
+            }
+            
+            <div style="text-align: center;">
+              <a href="${whatsappLink}" class="whatsapp-btn">
+                💬 Confirm via WhatsApp
+              </a>
+              <p style="font-size: 12px; color: #666;">Click the button above to send us a quick confirmation via WhatsApp</p>
+            </div>
+            
+            <p style="margin-top: 20px;">If you need to reschedule or have any questions, please contact us at ${
+              process.env.EMAIL_USER
+            } or via WhatsApp.</p>
+            
+            <p>We look forward to capturing your special moments!</p>
+            
+            <p style="margin-top: 30px;">Best regards,<br><strong>Jr Photography Team</strong></p>
+          </div>
+          <div class="footer">
+            <p>This is an automated confirmation email. Please do not reply directly to this message.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    console.log("📤 Sending customer email...");
+    const info = await transporter.sendMail(mailOptions);
+    console.log("✅ Customer email sent successfully!");
+    console.log("Message ID:", info.messageId);
+    return true;
+  } catch (error) {
+    console.error("❌ Failed to send customer email:", error);
+    throw error;
+  }
+}
 
 /**
  * Send admin notification email about new booking
@@ -11,7 +121,7 @@ async function sendAdminNotification(bookingDetails) {
 
   const mailOptions = {
     from: `"Jr Photography Bookings" <${process.env.EMAIL_USER}>`,
-    to: process.env.EMAIL_USER, // Admin email
+    to: process.env.EMAIL_USER,
     subject: `🔔 New Booking: ${bookingDetails.name} - ${bookingDetails.date}`,
     html: `
       <!DOCTYPE html>
@@ -123,7 +233,10 @@ async function sendAdminNotification(bookingDetails) {
   }
 }
 
-// Then update the /api/book endpoint to send BOTH emails:
+// ========================================
+// REPLACE YOUR EXISTING /api/book ENDPOINT WITH THIS:
+// (Find the existing app.post("/api/book", ...) and replace it entirely)
+// ========================================
 
 /**
  * @route POST /api/book
