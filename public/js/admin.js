@@ -58,10 +58,6 @@ let confirmCallback = null;
     if (usernameEl) {
       usernameEl.textContent = data.user.username;
     }
-
-    // Show the page after successful auth - ADD THIS LINE
-    document.body.classList.add("authenticated");
-
     resetInactivityTimer();
   } catch (error) {
     console.error("Auth error:", error);
