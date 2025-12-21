@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jr-photography.onrender.com/sitemap.xml

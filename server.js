@@ -14,6 +14,13 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-this";
 
+//---caching ---//
+app.use(
+  express.static("public", {
+    maxAge: "30d",
+  })
+);
+
 // Import models
 const Booking = require("./db/bookingModel");
 const Package = require("./db/packageModel");
